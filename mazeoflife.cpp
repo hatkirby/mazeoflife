@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	}
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);
-	SDL_EnableKeyRepeat(150, 75);
+	SDL_EnableKeyRepeat(100, 50);
 
 	State* state = new GameState();
 
