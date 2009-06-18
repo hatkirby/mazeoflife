@@ -2,12 +2,17 @@
 
 Board::Board()
 {
+	Board(Level());
+}
+
+Board::Board(Level level)
+{
 	int x,y;
 	for (y=0;y<HEIGHT;y++)
 	{
 		for (x=0;x<WIDTH;x++)
 		{
-			if (x > 10 && x < 20 && y > 10 && y < 20)
+			if (level.checkSquare(x, y))
 			{
 				blocks[x][y] = rand() % 2;
 			} else {
@@ -15,9 +20,6 @@ Board::Board()
 			}
 		}
 	}
-
-	on = getColor(0, 0, 0);
-	off = getColor(255, 255, 255);
 }
 
 bool Board::isObstructed(int x, int y)
@@ -25,7 +27,7 @@ bool Board::isObstructed(int x, int y)
 	return blocks[x][y];
 }
 
-void Board::render(SDL_Surface* screen)
+void Board::render(SDL_Surface* screen, Level level)
 {
 	SDL_Rect block;
 	block.w = 16;
@@ -40,7 +42,7 @@ void Board::render(SDL_Surface* screen)
 			block.x = x*16;
 			block.y = y*16;
 
-			SDL_FillRect(screen, &block, (blocks[x][y] ? on : off));
+			SDL_FillRect(screen, &block, (blocks[x][y] ? level.getAliveColor() : level.getDeadColor()));
 		}
 	}
 }

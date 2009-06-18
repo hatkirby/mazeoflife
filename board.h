@@ -4,14 +4,13 @@
 class Board
 {
 	private:
-		Uint32 on;
-		Uint32 off;
 		bool blocks[WIDTH][HEIGHT];
 
 	public:
 		Board();
+		Board(Level level);
 		bool isObstructed(int x, int y);
-		void render(SDL_Surface* screen);
+		void render(SDL_Surface* screen, Level level);
 };
 
 #endif

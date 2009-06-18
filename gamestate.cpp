@@ -1,11 +1,13 @@
 #include "includes.h"
 
-GameState::GameState(SDL_PixelFormat* fmt)
+GameState::GameState()
 {
-	player_color = SDL_MapRGB(fmt, 255, 255, 0);
+	player_color = getColor(255, 255, 0);
 
 	newGame = true;
 	doneMaking = false;
+
+	level = Level();
 }
 
 void GameState::input(SDLKey key)
@@ -32,14 +34,17 @@ void GameState::input(SDLKey key)
 				break;
 		}
 	}
+}
 
+void GameState::tick()
+{
 	if (newGame)
 	{
 		playerx = 1;
 		playery = 1;
-		board = Board();
+		board = Board(level);
 		newGame = false;
-		doneMaking = false;
+		doneMaking = true;
 	}
 }
 
@@ -55,7 +60,7 @@ void GameState::move(int x, int y)
 
 void GameState::render(SDL_Surface* screen)
 {
-	board.render(screen);
+	board.render(screen, level);
 
 	SDL_Rect block;
 	block.x = playerx*16;

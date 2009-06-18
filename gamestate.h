@@ -7,12 +7,14 @@ class GameState : public State {
 		int playerx, playery;
 		bool newGame;
 		bool doneMaking;
+		Level level;
 		Board board;
 		void move(int x, int y);
 
 	public:
-		GameState(SDL_PixelFormat* fmt);
+		GameState();
 		void input(SDLKey key);
+		void tick();
 		void render(SDL_Surface* screen);
 };
 
