@@ -1,4 +1,4 @@
-OBJS = mazeoflife.o gamestate.o
+OBJS = mazeoflife.o gamestate.o board.o
 CC = g++
 CFLAGS = `pkg-config sdl --cflags`
 LIBS = `pkg-config sdl --libs`

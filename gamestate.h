@@ -3,13 +3,12 @@
 
 class GameState : public State {
 	private:
-		bool blocks[WIDTH][HEIGHT];
-		Uint32 on;
-		Uint32 off;
 		Uint32 player_color;
 		int playerx, playery;
+		bool newGame;
+		bool doneMaking;
+		Board board;
 		void move(int x, int y);
-		void wrap(int* x, int* y);
 
 	public:
 		GameState(SDL_PixelFormat* fmt);
