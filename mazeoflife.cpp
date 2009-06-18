@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 	}
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);
+	SDL_EnableKeyRepeat(100, 50);
 
 	State* state = new GameState(screen->format);
 
@@ -37,12 +38,16 @@ int main(int argc, char *argv[])
 				case SDL_ACTIVEEVENT:
 					if (anEvent.active.state == SDL_APPINPUTFOCUS)
 					{
-						//	gameSleep = !anEvent.active.gain;
+						gameSleep = !anEvent.active.gain;
 					}
 
 					break;
 				case SDL_QUIT:
 					exit(0);
+
+					break;
+				case SDL_KEYDOWN:
+					state->input(anEvent.key.keysym.sym);
 
 					break;
 			}
