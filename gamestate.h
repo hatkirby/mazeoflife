@@ -28,6 +28,7 @@ class GameState : public State {
 		struct Info {
 			int playerx, playery;
 			Level level;
+			bool doneMaking;
 		};
 
 		class Board
@@ -36,6 +37,7 @@ class GameState : public State {
 				bool blocks[WIDTH][HEIGHT];
 				void incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick);
 				GameState::Info* info;
+				int gens;
 
 			public:
 				Board();

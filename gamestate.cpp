@@ -10,6 +10,7 @@ GameState::GameState()
 	info.playerx = 1;
 	info.playery = 1;
 	info.level = Level();
+	info.doneMaking = false;
 	board = Board(&info);
 
 	SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
@@ -17,35 +18,39 @@ GameState::GameState()
 
 void GameState::input(SDLKey key)
 {
-	switch (key)
+	if (info.doneMaking)
 	{
-		case SDLK_LEFT:
-			move(info.playerx-1, info.playery);
+		switch (key)
+		{
+			case SDLK_LEFT:
+				move(info.playerx-1, info.playery);
 
-			break;
-		case SDLK_RIGHT:
-			move(info.playerx+1, info.playery);
+				break;
+			case SDLK_RIGHT:
+				move(info.playerx+1, info.playery);
 
-			break;
-		case SDLK_UP:
-			move(info.playerx, info.playery-1);
+				break;
+			case SDLK_UP:
+				move(info.playerx, info.playery-1);
 
-			break;
-		case SDLK_DOWN:
-			move(info.playerx, info.playery+1);
+				break;
+			case SDLK_DOWN:
+				move(info.playerx, info.playery+1);
 
-			break;
-		case SDLK_ESCAPE:
-			newGame = false;
+				break;
+			case SDLK_ESCAPE:
+				newGame = false;
 
-			info.playerx = 1;
-			info.playery = 1;
-			info.level = Level();
-			board = Board(&info);
+				info.playerx = 1;
+				info.playery = 1;
+				info.level = Level();
+				info.doneMaking = false;
+				board = Board(&info);
 
-			SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
+				SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
 
-			break;
+				break;
+		}
 	}
 }
 
@@ -62,6 +67,7 @@ void GameState::tick()
 		}
 
 		info.level.incrementLevel();
+		info.doneMaking = false;
 		board = Board(&info);
 		newGame = false;
 
@@ -252,6 +258,8 @@ void GameState::Board::tick()
 			}
 		}
 	}
+
+	if (!info->doneMaking && ++gens > 100) info->doneMaking = true;
 }
 
 void GameState::Board::incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick)
