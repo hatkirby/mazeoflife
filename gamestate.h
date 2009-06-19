@@ -22,6 +22,7 @@ class GameState : public State {
 				bool checkSquare(int x, int y);
 				Uint32 getAliveColor();
 				Uint32 getDeadColor();
+				void incrementLevel();
 		};
 
 		struct Info {
@@ -46,8 +47,8 @@ class GameState : public State {
 
 	private:
 		Uint32 player_color;
+		Uint32 event_color;
 		bool newGame;
-		bool doneMaking;
 		Info info;
 		Board board;
 		void move(int x, int y);

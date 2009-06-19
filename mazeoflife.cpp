@@ -16,6 +16,8 @@ int main(int argc, char *argv[])
 	/* Clean up on exit */
 	atexit(SDL_Quit);
 
+	SDL_WM_SetCaption("Maze Of Life", NULL);
+
 	/*
 	* Initialize the display in a 640x480 8-bit palettized mode,
 	* requesting a software surface
@@ -26,7 +28,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	SDL_WM_SetCaption("Maze Of Life", NULL);
 	SDL_EnableKeyRepeat(100, 50);
 
 	State* state = new GameState();

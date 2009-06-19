@@ -3,36 +3,49 @@
 GameState::GameState()
 {
 	player_color = getColor(255, 255, 0);
+	event_color = getColor(0, 0, 255);
 
-	newGame = true;
-	doneMaking = false;
+	newGame = false;
 
+	info.playerx = 1;
+	info.playery = 1;
 	info.level = Level();
+	board = Board(&info);
+
+	SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
 }
 
 void GameState::input(SDLKey key)
 {
-	if (doneMaking)
+	switch (key)
 	{
-		switch (key)
-		{
-			case SDLK_LEFT:
-				move(info.playerx-1, info.playery);
+		case SDLK_LEFT:
+			move(info.playerx-1, info.playery);
 
-				break;
-			case SDLK_RIGHT:
-				move(info.playerx+1, info.playery);
+			break;
+		case SDLK_RIGHT:
+			move(info.playerx+1, info.playery);
 
-				break;
-			case SDLK_UP:
-				move(info.playerx, info.playery-1);
+			break;
+		case SDLK_UP:
+			move(info.playerx, info.playery-1);
 
-				break;
-			case SDLK_DOWN:
-				move(info.playerx, info.playery+1);
+			break;
+		case SDLK_DOWN:
+			move(info.playerx, info.playery+1);
 
-				break;
-		}
+			break;
+		case SDLK_ESCAPE:
+			newGame = false;
+
+			info.playerx = 1;
+			info.playery = 1;
+			info.level = Level();
+			board = Board(&info);
+
+			SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
+
+			break;
 	}
 }
 
@@ -40,11 +53,21 @@ void GameState::tick()
 {
 	if (newGame)
 	{
-		info.playerx = 1;
-		info.playery = 1;
+		switch (rand()%4)
+		{
+			case 0: info.playerx = 1; info.playery = 1; break;
+			case 1: info.playerx = 1; info.playery = HEIGHT-2; break;
+			case 2: info.playerx = WIDTH-2; info.playery = HEIGHT-2; break;
+			case 3: info.playerx = WIDTH-2; info.playery = 1; break;
+		}
+
+		info.level.incrementLevel();
 		board = Board(&info);
 		newGame = false;
-		doneMaking = true;
+
+		char title[32];
+		sprintf(title, "Maze Of Life - Level %d", info.level.getLevel());
+		SDL_WM_SetCaption(title, NULL);
 	}
 
 	board.tick();
@@ -55,6 +78,7 @@ void GameState::move(int x, int y)
 	wrap(&x, &y);
 
 	if (board.isObstructed(x,y)) return;
+	if ((x==15)&&(y==15)) newGame = true;
 
 	info.playerx = x;
 	info.playery = y;
@@ -62,8 +86,10 @@ void GameState::move(int x, int y)
 
 void GameState::render(SDL_Surface* screen)
 {
+	// Paint maze
 	board.render(screen);
 
+	// Paint player
 	SDL_Rect block;
 	block.x = info.playerx*16;
 	block.y = info.playery*16;
@@ -71,6 +97,12 @@ void GameState::render(SDL_Surface* screen)
 	block.h = 16;
 
 	SDL_FillRect(screen, &block, player_color);
+
+	// Paint event
+	block.x = 15*16;
+	block.y = 15*16;
+
+	SDL_FillRect(screen, &block, event_color);
 }
 
 GameState::Level::Level()
@@ -95,14 +127,9 @@ int GameState::Level::getLevel()
 	return level;
 }
 
-int GameState::Level::getLevelGroup()
-{
-	return (level/10)+1;
-}
-
 bool GameState::Level::checkSquare(int x, int y)
 {
-	switch (getLevelGroup())
+	switch (level/10+1)
 	{
 		case 1:
 	                return ((x>13)&&(x<16)&&(y>13)&&(y<16));
@@ -121,12 +148,17 @@ bool GameState::Level::checkSquare(int x, int y)
 
 Uint32 GameState::Level::getAliveColor()
 {
-	return alive[(getLevelGroup()-1)%5];
+	return alive[(level/10)%5];
 }
 
 Uint32 GameState::Level::getDeadColor()
 {
-	return dead[(getLevelGroup()-1)%5];
+	return dead[(level/10)%5];
+}
+
+void GameState::Level::incrementLevel()
+{
+	level++;
 }
 
 GameState::Board::Board()
@@ -151,6 +183,8 @@ GameState::Board::Board(GameState::Info* info)
 			}
 		}
 	}
+
+	blocks[15][15] = false;
 }
 
 bool GameState::Board::isObstructed(int x, int y)
@@ -194,6 +228,11 @@ void GameState::Board::tick()
 	{
 		for (y=0;y<HEIGHT;y++)
 		{
+			if ((x==15)&&(y==15))
+			{
+				continue;
+			}
+
 			int neighbors = 0;
 
 			if ((x>0)&&(y>0)) incrementIfNeighbor(x-1,y-1,temp,&neighbors);
@@ -219,7 +258,7 @@ void GameState::Board::incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT
 {
 	wrap(&x, &y);
 
-	if ((blocks[x][y])||((info->playerx==x)&&(info->playery==y)))
+	if ((temp[x][y])||((info->playerx==x)&&(info->playery==y))||((x==15)&&(y==15)))
 	{
 		++*tick;
 	}
