@@ -5,4 +5,5 @@
 #include "state.h"
 #include "mazeoflife.h"
 #include "titlestate.h"
+#include "htpstate.h"
 #include "gamestate.h"

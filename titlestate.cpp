@@ -23,7 +23,9 @@ void TitleState::input(SDLKey key)
 				changeState(new GameState());
 
 				break;
-			case 1: // Add How To Play
+			case 1:
+				changeState(new HowToPlayState());
+
 				break;
 			case 2: // Add choose highscore list
 				break;
