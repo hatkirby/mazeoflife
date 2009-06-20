@@ -1,7 +1,7 @@
 OBJS = mazeoflife.o titlestate.o htpstate.o gamestate.o
 CC = g++
-CFLAGS = `pkg-config sdl --cflags`
-LIBS = `pkg-config sdl --libs`
+CFLAGS = `sdl-config --cflags` -I/usr/local/include/SDL
+LIBS = `sdl-config --libs` -lSDL_image
 
 mazeoflife: $(OBJS)
 	$(CC) $(OBJS) $(LIBS) -o mazeoflife
