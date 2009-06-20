@@ -2,6 +2,7 @@
 
 SDL_Surface *screen;
 bool gameSleep = false;
+State* state = new DummyState();
 
 int main(int argc, char *argv[])
 {
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
 
 	SDL_EnableKeyRepeat(100, 50);
 
-	State* state = new GameState();
+	state = new TitleState();
 
 	SDL_Event anEvent;
 	for (;;)
@@ -87,4 +88,9 @@ void wrap(int* x, int* y)
 Uint32 getColor(int r, int g, int b)
 {
 	return SDL_MapRGB(screen->format, r, g, b);
+}
+
+void changeState(State* nState)
+{
+	state = nState;
 }
