@@ -2,8 +2,8 @@
 
 TitleState::TitleState()
 {
-	background = IMG_Load("title.png");
-	pointer = IMG_Load("pointer.png");
+	background = SDL_LoadBMP("title.bmp");
+	pointer = SDL_LoadBMP("pointer.bmp");
 	selection = 0;
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);
