@@ -2,8 +2,12 @@
 
 TitleState::TitleState()
 {
-	background = SDL_LoadBMP("title.bmp");
-	pointer = SDL_LoadBMP("pointer.bmp");
+	SDL_RWops *rw = SDL_RWFromMem(&_binary_title_bmp_start, (int) &_binary_title_bmp_size);
+	background = SDL_LoadBMP_RW(rw, 1);
+
+	rw = SDL_RWFromMem(&_binary_pointer_bmp_start, (int) &_binary_pointer_bmp_size);
+	pointer = SDL_LoadBMP_RW(rw, 1);
+
 	selection = 0;
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);

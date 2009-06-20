@@ -2,9 +2,15 @@
 
 HowToPlayState::HowToPlayState()
 {
-	background1 = SDL_LoadBMP("htp1.bmp");
-	background2 = SDL_LoadBMP("htp2.bmp");
-	pointer = SDL_LoadBMP("pointer.bmp");
+	SDL_RWops *rw = SDL_RWFromMem(&_binary_htp1_bmp_start, (int) &_binary_htp1_bmp_size);
+	background1 = SDL_LoadBMP_RW(rw, 1);
+
+	rw = SDL_RWFromMem(&_binary_htp2_bmp_start, (int) &_binary_htp2_bmp_size);
+	background2 = SDL_LoadBMP_RW(rw, 1);
+
+	rw = SDL_RWFromMem(&_binary_pointer_bmp_start, (int) &_binary_pointer_bmp_size);
+	pointer = SDL_LoadBMP_RW(rw, 1);
+
 	secondPage = false;
 	selection = 0;
 

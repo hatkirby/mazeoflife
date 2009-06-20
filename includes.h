@@ -4,6 +4,7 @@
 #include <string>
 #include "state.h"
 #include "mazeoflife.h"
+#include "resources.h"
 #include "titlestate.h"
 #include "htpstate.h"
 #include "gamestate.h"
