@@ -2,7 +2,7 @@
 
 SDL_Surface *screen;
 bool gameSleep = false;
-State* state = new DummyState();
+State* state;
 
 int main(int argc, char *argv[])
 {
