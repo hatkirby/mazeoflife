@@ -39,15 +39,7 @@ void GameState::input(SDLKey key)
 
 				break;
 			case SDLK_ESCAPE:
-				newGame = false;
-
-				info.playerx = 1;
-				info.playery = 1;
-				info.level = Level();
-				info.doneMaking = false;
-				board = Board(&info);
-
-				SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
+				changeState(new TitleState());
 
 				break;
 		}
@@ -241,14 +233,14 @@ void GameState::Board::tick()
 
 			int neighbors = 0;
 
-			if ((x>0)&&(y>0)) incrementIfNeighbor(x-1,y-1,temp,&neighbors);
-			if ((x>0)) incrementIfNeighbor(x-1,y,temp,&neighbors);
-			if ((x>0)&&(y<HEIGHT-1)) incrementIfNeighbor(x-1,y+1,temp,&neighbors);
-			if ((y>0)) incrementIfNeighbor(x,y-1,temp,&neighbors);
-			if ((y<HEIGHT-1)) incrementIfNeighbor(x,y+1,temp,&neighbors);
-			if ((x<WIDTH-1)&&(y>0)) incrementIfNeighbor(x+1,y-1,temp,&neighbors);
-			if ((x<WIDTH-1)) incrementIfNeighbor(x+1,y,temp,&neighbors);
-			if ((x<WIDTH-1)&&(y<HEIGHT-1)) incrementIfNeighbor(x+1,y+1,temp,&neighbors);
+			incrementIfNeighbor(x-1,y-1,temp,&neighbors);
+			incrementIfNeighbor(x-1,y,temp,&neighbors);
+			incrementIfNeighbor(x-1,y+1,temp,&neighbors);
+			incrementIfNeighbor(x,y-1,temp,&neighbors);
+			incrementIfNeighbor(x,y+1,temp,&neighbors);
+			incrementIfNeighbor(x+1,y-1,temp,&neighbors);
+			incrementIfNeighbor(x+1,y,temp,&neighbors);
+			incrementIfNeighbor(x+1,y+1,temp,&neighbors);
 
 			if (temp[x][y])
 			{
@@ -264,10 +256,16 @@ void GameState::Board::tick()
 
 void GameState::Board::incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick)
 {
+	int nx = x;
+	int ny = y;
+
 	wrap(&x, &y);
 
-	if ((temp[x][y])||((info->playerx==x)&&(info->playery==y))||((x==15)&&(y==15)))
+	if (!((nx!=x)&&(ny!=y)))
 	{
-		++*tick;
+		if ((temp[x][y])||((info->playerx==x)&&(info->playery==y))||((x==15)&&(y==15)))
+		{
+			++*tick;
+		}
 	}
 }

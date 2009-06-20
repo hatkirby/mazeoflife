@@ -5,6 +5,8 @@ TitleState::TitleState()
 	background = SDL_LoadBMP("title.bmp");
 	pointer = SDL_LoadBMP("pointer.bmp");
 	selection = 0;
+
+	SDL_WM_SetCaption("Maze Of Life", NULL);
 }
 
 void TitleState::input(SDLKey key)

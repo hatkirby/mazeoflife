@@ -1,7 +1,6 @@
 #include "includes.h"
 
 SDL_Surface *screen;
-bool gameSleep = false;
 State* state;
 
 int main(int argc, char *argv[])
@@ -42,13 +41,6 @@ int main(int argc, char *argv[])
 		{
 			switch (anEvent.type)
 			{
-				case SDL_ACTIVEEVENT:
-					if (anEvent.active.state == SDL_APPINPUTFOCUS)
-					{
-						gameSleep = !anEvent.active.gain;
-					}
-
-					break;
 				case SDL_QUIT:
 					exit(0);
 

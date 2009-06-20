@@ -7,6 +7,8 @@ HowToPlayState::HowToPlayState()
 	pointer = SDL_LoadBMP("pointer.bmp");
 	secondPage = false;
 	selection = 0;
+
+	SDL_WM_SetCaption("Maze Of Life - How To Play", NULL);
 }
 
 void HowToPlayState::input(SDLKey key)
