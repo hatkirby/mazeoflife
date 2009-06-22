@@ -9,6 +9,7 @@
 #define DEFIMAGE(title) extern int* _binary_ ## title ## _bmp_start; extern int* _binary_ ## title ## _bmp_size;
 #endif
 
+DEFIMAGE(icon)
 DEFIMAGE(title)
 DEFIMAGE(pointer)
 DEFIMAGE(htp1)

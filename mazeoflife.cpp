@@ -18,6 +18,10 @@ int main(int argc, char *argv[])
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);
 
+	SDL_Surface* icon;
+	LOADIMAGE(icon,icon)
+	SDL_WM_SetIcon(icon, NULL);
+
 	/*
 	* Initialize the display in a 640x480 8-bit palettized mode,
 	* requesting a software surface
