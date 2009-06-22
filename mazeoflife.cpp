@@ -7,8 +7,7 @@ int main(int argc, char *argv[])
 {
 	srand(time(NULL));
 
-	/* Initialize defaults, Video and Audio */
-	if((SDL_Init(SDL_INIT_VIDEO)==-1)) { 
+	if((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)==-1)) { 
 		printf("Could not initialize SDL: %s.\n", SDL_GetError());
 		exit(-1);
 	}
@@ -36,11 +35,11 @@ int main(int argc, char *argv[])
 
 	state = new TitleState();
 
+	SDL_AddTimer(TICKDELAY, *tick, NULL);
+
 	SDL_Event anEvent;
 	for (;;)
 	{
-		state->tick();
-
 		while (SDL_PollEvent(&anEvent))
 		{
 			switch (anEvent.type)
@@ -89,4 +88,11 @@ Uint32 getColor(int r, int g, int b)
 void changeState(State* nState)
 {
 	state = nState;
+}
+
+Uint32 tick(Uint32 interval, void *param)
+{
+	state->tick();
+
+	return interval;
 }

@@ -1,14 +1,15 @@
 PROJECT = mazeoflife
 LTARGET = build/$(PROJECT)
 WTARGET = build/$(PROJECT).exe
-CC = g++
-WINCC = i586-mingw32msvc-g++
+CC	= g++
+WINCC	= i586-mingw32msvc-g++
 WINDRES = i586-mingw32msvc-windres
 FILES 	= $(addprefix build/,$(wildcard *.cpp))
+HEADERS = $(wildcard *.h)
 MODULES = $(patsubst %.cpp,%,$(FILES))
 SOURCES = $(addsuffix .o,$(MODULES))
 WINSRC 	= $(addsuffix win,$(SOURCES))
-IMAGES = $(wildcard *.bmp)
+IMAGES	= $(wildcard *.bmp)
 CIMAGES = $(addprefix build/,$(IMAGES:.bmp=.bmp.o))
 LINCCFL = `sdl-config --cflags`
 LINLDFL = `sdl-config --libs`
@@ -28,14 +29,14 @@ clean:
 $(LTARGET): $(SOURCES) $(CIMAGES)
 	$(CC) $(SOURCES) $(CIMAGES) -o $(LTARGET) $(LINLDFL)
 
-$(SOURCES): build/%.o: %.cpp
-	$(CC) -c $? -o $@ $(LINCCFL)
+$(SOURCES): build/%.o: %.cpp $(HEADERS)
+	$(CC) -c $< -o $@ $(LINCCFL)
 
 $(WTARGET): $(WINSRC) $(CIMAGES) build/winres.o
 	$(WINCC) $(WINSRC) $(CIMAGES) build/winres.o -o $(WTARGET) $(WINLDFL)
 
-$(WINSRC): build/%.owin: %.cpp
-	$(WINCC) -c $? -o $@ $(WINCCFL)
+$(WINSRC): build/%.owin: %.cpp $(HEADERS)
+	$(WINCC) -c $< -o $@ $(WINCCFL)
 
 build/winres.o: winres.rc
 	$(WINDRES) $? $@
