@@ -13,5 +13,6 @@ DEFIMAGE(title)
 DEFIMAGE(pointer)
 DEFIMAGE(htp1)
 DEFIMAGE(htp2)
+DEFIMAGE(chl)
 
 #endif

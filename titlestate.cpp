@@ -30,7 +30,9 @@ void TitleState::input(SDLKey key)
 				changeState(new HowToPlayState());
 
 				break;
-			case 2: // Add choose highscore list
+			case 2:
+				changeState(new ChooseHighscoreListState());
+
 				break;
 			case 3:
 				exit(0);
@@ -45,8 +47,8 @@ void TitleState::render(SDL_Surface* screen)
 	SDL_Rect pSpace;
 	pSpace.x = 136;
 	pSpace.y = (selection==0?316:(selection==1?350:(selection==2?381:417)));
-	pSpace.w = screen->w;
-	pSpace.h = screen->h;
+	pSpace.w = pointer->w;
+	pSpace.h = pointer->h;
 
 	SDL_BlitSurface(pointer, NULL, screen, &pSpace);
 }

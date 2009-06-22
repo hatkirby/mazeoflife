@@ -52,8 +52,8 @@ void HowToPlayState::render(SDL_Surface* screen)
 	}
 
 	pSpace.y = 430;
-	pSpace.w = screen->w;
-	pSpace.h = screen->h;
+	pSpace.w = pointer->w;
+	pSpace.h = pointer->h;
 
 	SDL_BlitSurface(pointer, NULL, screen, &pSpace);
 }
