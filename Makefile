@@ -3,6 +3,7 @@ LTARGET = build/$(PROJECT)
 WTARGET = build/$(PROJECT).exe
 CC = g++
 WINCC = i586-mingw32msvc-g++
+WINDRES = i586-mingw32msvc-windres
 FILES 	= $(addprefix build/,$(wildcard *.cpp))
 MODULES = $(patsubst %.cpp,%,$(FILES))
 SOURCES = $(addsuffix .o,$(MODULES))
@@ -30,11 +31,14 @@ $(LTARGET): $(SOURCES) $(CIMAGES)
 $(SOURCES): build/%.o: %.cpp
 	$(CC) -c $? -o $@ $(LINCCFL)
 
-$(WTARGET): $(WINSRC) $(CIMAGES)
-	$(WINCC) $(WINSRC) $(CIMAGES) -o $(WTARGET) $(WINLDFL)
+$(WTARGET): $(WINSRC) $(CIMAGES) build/winres.o
+	$(WINCC) $(WINSRC) $(CIMAGES) build/winres.o -o $(WTARGET) $(WINLDFL)
 
 $(WINSRC): build/%.owin: %.cpp
 	$(WINCC) -c $? -o $@ $(WINCCFL)
+
+build/winres.o: winres.rc
+	$(WINDRES) $? $@
 
 $(CIMAGES): build/%.bmp.o: %.bmp
 	objcopy --input binary --output elf32-i386 -B i386 $? $@
