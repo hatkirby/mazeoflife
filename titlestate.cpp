@@ -2,11 +2,8 @@
 
 TitleState::TitleState()
 {
-	SDL_RWops *rw = SDL_RWFromMem(&_binary_title_bmp_start, (int) &_binary_title_bmp_size);
-	background = SDL_LoadBMP_RW(rw, 1);
-
-	rw = SDL_RWFromMem(&_binary_pointer_bmp_start, (int) &_binary_pointer_bmp_size);
-	pointer = SDL_LoadBMP_RW(rw, 1);
+	LOADIMAGE(background,title)
+	LOADIMAGE(pointer,pointer)
 
 	selection = 0;
 

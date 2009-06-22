@@ -1,27 +1,40 @@
-SOURCES = mazeoflife.cpp titlestate.cpp htpstate.cpp gamestate.cpp
-OBJS = $(SOURCES:.cpp=.cpp.o)
-IMAGES = title.bmp pointer.bmp htp1.bmp htp2.bmp
-CIMAGES = $(IMAGES:.bmp=.bmp.o)
+PROJECT = mazeoflife
+LTARGET = build/$(PROJECT)
+WTARGET = build/$(PROJECT).exe
 CC = g++
-CFLAGS = `pkg-config sdl --cflags`
-LIBS = `pkg-config sdl --libs`
+WINCC = i586-mingw32msvc-g++
+FILES 	= $(addprefix build/,$(wildcard *.cpp))
+MODULES = $(patsubst %.cpp,%,$(FILES))
+SOURCES = $(addsuffix .o,$(MODULES))
+WINSRC 	= $(addsuffix win,$(SOURCES))
+IMAGES = $(wildcard *.bmp)
+CIMAGES = $(addprefix build/,$(IMAGES:.bmp=.bmp.o))
+LINCCFL = `sdl-config --cflags`
+LINLDFL = `sdl-config --libs`
+WINCCFL = `/opt/SDL-1.2.9/bin/i386-mingw32msvc-sdl-config --cflags` -DWINDOWS
+WINLDFL = `/opt/SDL-1.2.9/bin/i386-mingw32msvc-sdl-config --libs`
 
-mazeoflife: $(OBJS) $(CIMAGES)
-	$(CC) $(OBJS) $(CIMAGES) $(LIBS) -o mazeoflife
+all: init $(LTARGET) $(WTARGET)
+linux: init $(LTARGET)
+windows: init $(WTARGET)
 
-%.cpp.o: %.cpp
-	$(CC) -c $< $(CFLAGS) -o $@
-
-%.d: %.cpp
-	@set -e; rm -f $@; \
-	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
-%.bmp.o: %.bmp
-	objcopy --input binary --output elf32-i386 -B i386 $< $@
-
-include $(OBJS:.cpp.o=.d)
+init:
+	mkdir -p build
 
 clean:
-	rm -rdfv $(OBJS) $(OBJS:.cpp.o=.d) $(CIMAGES) mazeoflife
+	rm -rdfv build
+
+$(LTARGET): $(SOURCES) $(CIMAGES)
+	$(CC) $(SOURCES) $(CIMAGES) -o $(LTARGET) $(LINLDFL)
+
+$(SOURCES): build/%.o: %.cpp
+	$(CC) -c $? -o $@ $(LINCCFL)
+
+$(WTARGET): $(WINSRC) $(CIMAGES)
+	$(WINCC) $(WINSRC) $(CIMAGES) -o $(WTARGET) $(WINLDFL)
+
+$(WINSRC): build/%.owin: %.cpp
+	$(WINCC) -c $? -o $@ $(WINCCFL)
+
+$(CIMAGES): build/%.bmp.o: %.bmp
+	objcopy --input binary --output elf32-i386 -B i386 $? $@

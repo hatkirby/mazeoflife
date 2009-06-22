@@ -1,20 +1,17 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
-// title.bmp
-extern int* _binary_title_bmp_start;
-extern int* _binary_title_bmp_size;
+#ifdef WINDOWS
+#define LOADIMAGE(var,title) SDL_RWops * title ## _rw = SDL_RWFromMem(&binary_ ## title ## _bmp_start, (int) &binary_ ## title ## _bmp_size); var = SDL_LoadBMP_RW( title ## _rw, 1);
+#define DEFIMAGE(title) extern int* binary_ ## title ## _bmp_start; extern int* binary_ ## title ## _bmp_size;
+#else
+#define LOADIMAGE(var,title) SDL_RWops * title ## _rw = SDL_RWFromMem(&_binary_ ## title ## _bmp_start, (int) &_binary_ ## title ## _bmp_size); var = SDL_LoadBMP_RW( title ## _rw, 1);
+#define DEFIMAGE(title) extern int* _binary_ ## title ## _bmp_start; extern int* _binary_ ## title ## _bmp_size;
+#endif
 
-// pointer.bmp
-extern int* _binary_pointer_bmp_start;
-extern int* _binary_pointer_bmp_size;
-
-// htp1.bmp
-extern int* _binary_htp1_bmp_start;
-extern int* _binary_htp1_bmp_size;
-
-// htp2.bmp
-extern int* _binary_htp2_bmp_start;
-extern int* _binary_htp2_bmp_size;
+DEFIMAGE(title)
+DEFIMAGE(pointer)
+DEFIMAGE(htp1)
+DEFIMAGE(htp2)
 
 #endif
