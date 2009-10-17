@@ -2,18 +2,19 @@
 #define RESOURCES_H
 
 #ifdef WINDOWS
-#define LOADIMAGE(var,title) SDL_RWops * title ## _rw = SDL_RWFromMem(&binary_ ## title ## _bmp_start, (int) &binary_ ## title ## _bmp_size); var = SDL_LoadBMP_RW( title ## _rw, 1);
-#define DEFIMAGE(title) extern int* binary_ ## title ## _bmp_start; extern int* binary_ ## title ## _bmp_size;
+#define RESNAME(title,part) binary_resources_ ## title ## _ ## part
 #else
-#define LOADIMAGE(var,title) SDL_RWops * title ## _rw = SDL_RWFromMem(&_binary_ ## title ## _bmp_start, (int) &_binary_ ## title ## _bmp_size); var = SDL_LoadBMP_RW( title ## _rw, 1);
-#define DEFIMAGE(title) extern int* _binary_ ## title ## _bmp_start; extern int* _binary_ ## title ## _bmp_size;
+#define RESNAME(title,part) _binary_resources_ ## title ## _ ## part
 #endif
 
-DEFIMAGE(icon)
-DEFIMAGE(title)
-DEFIMAGE(pointer)
-DEFIMAGE(htp1)
-DEFIMAGE(htp2)
-DEFIMAGE(chl)
+#define DEFRES(title) extern int* RESNAME(title,start); extern int* RESNAME(title,size);
+#define LOADIMAGE(var,title) SDL_RWops * title ## _rw = SDL_RWFromMem(&RESNAME(title ## _bmp,start), (int) &RESNAME(title ## _bmp,size)); var = SDL_LoadBMP_RW( title ## _rw, 1);
+
+DEFRES(icon_bmp)
+DEFRES(title_bmp)
+DEFRES(pointer_bmp)
+DEFRES(htp1_bmp)
+DEFRES(htp2_bmp)
+DEFRES(chl_bmp)
 
 #endif
