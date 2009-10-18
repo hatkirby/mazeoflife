@@ -4,7 +4,7 @@
 class GameState : public State {
 	public:
 		GameState();
-		void input(SDLKey key);
+		void input(SDL_keysym key);
 		void tick();
 		void render(SDL_Surface* screen);
 

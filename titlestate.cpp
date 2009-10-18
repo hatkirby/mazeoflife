@@ -10,15 +10,15 @@ TitleState::TitleState()
 	SDL_WM_SetCaption("Maze Of Life", NULL);
 }
 
-void TitleState::input(SDLKey key)
+void TitleState::input(SDL_keysym key)
 {
-	if ((key == SDLK_UP) && (selection != 0))
+	if ((key.sym == SDLK_UP) && (selection != 0))
 	{
 		selection--;
-	} else if ((key == SDLK_DOWN) && (selection != 3))
+	} else if ((key.sym == SDLK_DOWN) && (selection != 3))
 	{
 		selection++;
-	} else if (key == SDLK_RETURN)
+	} else if (key.sym == SDLK_RETURN)
 	{
 		switch (selection)
 		{

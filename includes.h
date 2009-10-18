@@ -1,7 +1,10 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include <time.h>
 #include <string>
+#include <vector>
+#include <fstream>
 #include "state.h"
 #include "mazeoflife.h"
 #include "resources.h"
@@ -9,3 +12,7 @@
 #include "htpstate.h"
 #include "chlstate.h"
 #include "gamestate.h"
+#include "highscore.h"
+#include "hslist.h"
+#include "hslocal.h"
+#include "hsnew.h"

@@ -16,5 +16,9 @@ DEFRES(pointer_bmp)
 DEFRES(htp1_bmp)
 DEFRES(htp2_bmp)
 DEFRES(chl_bmp)
+DEFRES(hlo_rtm_bmp)
+DEFRES(hlo_paartm_bmp)
+DEFRES(hlo_passartm_bmp)
+DEFRES(mono_ttf)
 
 #endif

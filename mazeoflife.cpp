@@ -7,13 +7,21 @@ int main(int argc, char *argv[])
 {
 	srand(time(NULL));
 
-	if((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)==-1)) { 
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == -1)
+	{ 
 		printf("Could not initialize SDL: %s.\n", SDL_GetError());
+		exit(-1);
+	}
+
+	if (TTF_Init() == -1)
+	{
+		printf("Could not initialize SDL_ttf: %s.\n", TTF_GetError());
 		exit(-1);
 	}
 
 	/* Clean up on exit */
 	atexit(SDL_Quit);
+	atexit(TTF_Quit);
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);
 
@@ -49,7 +57,7 @@ int main(int argc, char *argv[])
 
 					break;
 				case SDL_KEYDOWN:
-					state->input(anEvent.key.keysym.sym);
+					state->input(anEvent.key.keysym);
 
 					break;
 			}
@@ -95,4 +103,29 @@ Uint32 tick(Uint32 interval, void *param)
 	state->tick();
 
 	return interval;
+}
+
+TTF_Font* loadFont(int size)
+{
+	SDL_RWops* mono_rw = SDL_RWFromMem(&RESNAME(mono_ttf,start), (int) &RESNAME(mono_ttf,size));
+	TTF_Font* tmpfont = TTF_OpenFontRW(mono_rw, 1, size);
+
+	if (tmpfont == NULL)
+	{
+		printf("Unable to load font: %s\n", TTF_GetError());
+		exit(1);
+	}
+
+	return tmpfont;
+}
+
+const char* getDataFile()
+{
+#ifdef WINDOWS
+	char* dir = getenv("USERPROFILE");
+#else
+	char* dir = getenv("HOME");
+#endif
+
+	return (std::string(dir) + "/.molhslist").c_str();
 }

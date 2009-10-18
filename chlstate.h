@@ -4,7 +4,7 @@
 class ChooseHighscoreListState : public State {
 	public:
 		ChooseHighscoreListState();
-		void input(SDLKey key);
+		void input(SDL_keysym key);
 		void render(SDL_Surface* screen);
 
 	private:

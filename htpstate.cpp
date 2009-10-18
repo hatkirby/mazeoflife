@@ -12,15 +12,15 @@ HowToPlayState::HowToPlayState()
 	SDL_WM_SetCaption("Maze Of Life - How To Play", NULL);
 }
 
-void HowToPlayState::input(SDLKey key)
+void HowToPlayState::input(SDL_keysym key)
 {
-	if ((key == SDLK_LEFT) && (selection != 0))
+	if ((key.sym == SDLK_LEFT) && (selection != 0))
 	{
 		selection--;
-	} else if ((key == SDLK_RIGHT) && (selection != 1))
+	} else if ((key.sym == SDLK_RIGHT) && (selection != 1))
 	{
 		selection++;
-	} else if (key == SDLK_RETURN)
+	} else if (key.sym == SDLK_RETURN)
 	{
 		switch (selection)
 		{

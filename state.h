@@ -4,7 +4,7 @@
 class State
 {
 	public:
-		virtual void input(SDLKey key) {};
+		virtual void input(SDL_keysym key) {};
 		virtual void tick() {};
 		virtual void render(SDL_Surface* screen) {};
 };

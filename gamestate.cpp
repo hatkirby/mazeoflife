@@ -16,11 +16,11 @@ GameState::GameState()
 	SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
 }
 
-void GameState::input(SDLKey key)
+void GameState::input(SDL_keysym key)
 {
 	if (info.doneMaking)
 	{
-		switch (key)
+		switch (key.sym)
 		{
 			case SDLK_LEFT:
 				move(info.playerx-1, info.playery);
@@ -39,7 +39,48 @@ void GameState::input(SDLKey key)
 
 				break;
 			case SDLK_ESCAPE:
-				changeState(new TitleState());
+				std::ifstream exists(getDataFile());
+				if (exists)
+				{
+					FILE* hslist = fopen(getDataFile(), "r");
+					int scores;
+					Highscore* h;
+
+					fscanf(hslist, "%d%*c", &scores);
+
+					if (scores < 10)
+					{
+						fclose(hslist);
+
+						changeState(new NewHighscoreState(info.level.getLevel()));
+					} else {
+						for (int i=0; i<scores; i++)
+						{
+							int namelen;
+							char namelens[4];
+							char* name = (char*) calloc(25, sizeof(char));
+							int score;
+
+							fscanf(hslist, "%d", &namelen);
+							sprintf(namelens, "%%%dc", namelen);
+							fscanf(hslist, namelens, name);
+							fscanf(hslist, "%d%*c", &score);
+
+							h = new Highscore(name, score);
+						}
+
+						fclose(hslist);
+
+						if (h->getLevel() < info.level.getLevel())
+						{
+							changeState(new NewHighscoreState(info.level.getLevel()));
+						} else {
+							changeState(new LocalHighscoreListState(true));
+						}
+					}
+				} else {
+					changeState(new NewHighscoreState(info.level.getLevel()));
+				}
 
 				break;
 		}

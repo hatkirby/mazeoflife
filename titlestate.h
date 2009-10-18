@@ -4,7 +4,7 @@
 class TitleState : public State {
 	public:
 		TitleState();
-		void input(SDLKey key);
+		void input(SDL_keysym key);
 		void render(SDL_Surface* screen);
 
 	private:

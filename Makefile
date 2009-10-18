@@ -12,9 +12,9 @@ WINSRC 	= $(addsuffix win,$(SOURCES))
 RES	= $(wildcard resources/*)
 CRES	= $(patsubst resources/%,build/%,$(addsuffix .o,$(RES)))
 LINCCFL = `sdl-config --cflags`
-LINLDFL = `sdl-config --libs`
+LINLDFL = `sdl-config --libs` -lSDL_ttf
 WINCCFL = `/opt/SDL-1.2.9/bin/i386-mingw32msvc-sdl-config --cflags` -DWINDOWS
-WINLDFL = `/opt/SDL-1.2.9/bin/i386-mingw32msvc-sdl-config --libs`
+WINLDFL = `/opt/SDL-1.2.9/bin/i386-mingw32msvc-sdl-config --libs` -lSDL_ttf
 
 all: init $(LTARGET) $(WTARGET)
 linux: init $(LTARGET)

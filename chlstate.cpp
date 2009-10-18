@@ -10,19 +10,21 @@ ChooseHighscoreListState::ChooseHighscoreListState()
 	SDL_WM_SetCaption("Maze Of Life - Choose Highscore List", NULL);
 }
 
-void ChooseHighscoreListState::input(SDLKey key)
+void ChooseHighscoreListState::input(SDL_keysym key)
 {
-	if ((key == SDLK_UP) && (selection != 0))
+	if ((key.sym == SDLK_UP) && (selection != 0))
 	{
 		selection--;
-	} else if ((key == SDLK_DOWN) && (selection != 2))
+	} else if ((key.sym == SDLK_DOWN) && (selection != 2))
 	{
 		selection++;
-	} else if (key == SDLK_RETURN)
+	} else if (key.sym == SDLK_RETURN)
 	{
 		switch (selection)
 		{
-			case 0: // Go to local highscore list
+			case 0:
+				changeState(new LocalHighscoreListState(false));
+
 				break;
 			case 1: // Go to global highscore list
 				break;

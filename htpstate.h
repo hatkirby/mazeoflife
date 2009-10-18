@@ -4,7 +4,7 @@
 class HowToPlayState : public State {
 	public:
 		HowToPlayState();
-		void input(SDLKey key);
+		void input(SDL_keysym key);
 		void render(SDL_Surface* screen);
 
 	private:
