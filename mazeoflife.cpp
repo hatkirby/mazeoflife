@@ -19,9 +19,16 @@ int main(int argc, char *argv[])
 		exit(-1);
 	}
 
+	if (SDLNet_Init() == -1)
+	{
+		printf("Cound not initalize SDL_net: %s.\n", SDLNet_GetError());
+		exit(-1);
+	}
+
 	/* Clean up on exit */
 	atexit(SDL_Quit);
 	atexit(TTF_Quit);
+	atexit(SDLNet_Quit);
 
 	SDL_WM_SetCaption("Maze Of Life", NULL);
 
@@ -39,7 +46,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	SDL_EnableKeyRepeat(100, 50);
+	SDL_EnableKeyRepeat(100, 70);
 
 	state = new TitleState();
 
@@ -57,15 +64,16 @@ int main(int argc, char *argv[])
 
 					break;
 				case SDL_KEYDOWN:
-					state->input(anEvent.key.keysym);
+					if (anEvent.key.keysym.sym == SDLK_F4)
+					{
+						SDL_WM_ToggleFullScreen(screen);
+					} else {
+						state->input(anEvent.key.keysym);
+					}
 
 					break;
 			}
 		}
-
-		state->render(screen);
-
-		SDL_Flip(screen);
 	}
 
 	exit(0);
@@ -101,6 +109,9 @@ void changeState(State* nState)
 Uint32 tick(Uint32 interval, void *param)
 {
 	state->tick();
+	state->render(screen);
+
+	SDL_Flip(screen);
 
 	return interval;
 }

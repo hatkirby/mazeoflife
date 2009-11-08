@@ -3,7 +3,7 @@
 
 const int WIDTH = 30;
 const int HEIGHT = 30;
-const int TICKDELAY = 10;
+const int TICKDELAY = 5;
 
 void wrap(int* x, int* y);
 Uint32 getColor(int r, int g, int b);

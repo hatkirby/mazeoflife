@@ -25,8 +25,6 @@ LocalHighscoreListState::LocalHighscoreListState(bool fromGame)
 	SDL_BlitSurface(options, NULL, list, &oSpace);
 
 	selection = 0;
-
-	SDL_WM_SetCaption("Maze Of Life - Highscore List", NULL);
 }
 
 void LocalHighscoreListState::input(SDL_keysym key)

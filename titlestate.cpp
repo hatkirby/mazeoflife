@@ -6,8 +6,6 @@ TitleState::TitleState()
 	LOADIMAGE(pointer,pointer)
 
 	selection = 0;
-
-	SDL_WM_SetCaption("Maze Of Life", NULL);
 }
 
 void TitleState::input(SDL_keysym key)

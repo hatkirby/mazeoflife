@@ -7,35 +7,34 @@ GameState::GameState()
 
 	newGame = false;
 
-	info.playerx = 1;
-	info.playery = 1;
-	info.level = Level();
-	info.doneMaking = false;
-	board = Board(&info);
-
-	SDL_WM_SetCaption("Maze Of Life - Level 1", NULL);
+	info = new Info();
+	info->playerx = 1;
+	info->playery = 1;
+	info->level = Level();
+	info->doneMaking = false;
+	board = Board(info);
 }
 
 void GameState::input(SDL_keysym key)
 {
-	if (info.doneMaking)
+	if (info->doneMaking)
 	{
 		switch (key.sym)
 		{
 			case SDLK_LEFT:
-				move(info.playerx-1, info.playery);
+				move(info->playerx-1, info->playery);
 
 				break;
 			case SDLK_RIGHT:
-				move(info.playerx+1, info.playery);
+				move(info->playerx+1, info->playery);
 
 				break;
 			case SDLK_UP:
-				move(info.playerx, info.playery-1);
+				move(info->playerx, info->playery-1);
 
 				break;
 			case SDLK_DOWN:
-				move(info.playerx, info.playery+1);
+				move(info->playerx, info->playery+1);
 
 				break;
 			case SDLK_ESCAPE:
@@ -52,7 +51,7 @@ void GameState::input(SDL_keysym key)
 					{
 						fclose(hslist);
 
-						changeState(new NewHighscoreState(info.level.getLevel()));
+						changeState(new NewHighscoreState(info->level.getLevel()));
 					} else {
 						for (int i=0; i<scores; i++)
 						{
@@ -71,15 +70,15 @@ void GameState::input(SDL_keysym key)
 
 						fclose(hslist);
 
-						if (h->getLevel() < info.level.getLevel())
+						if (h->getLevel() < info->level.getLevel())
 						{
-							changeState(new NewHighscoreState(info.level.getLevel()));
+							changeState(new NewHighscoreState(info->level.getLevel()));
 						} else {
 							changeState(new LocalHighscoreListState(true));
 						}
 					}
 				} else {
-					changeState(new NewHighscoreState(info.level.getLevel()));
+					changeState(new NewHighscoreState(info->level.getLevel()));
 				}
 
 				break;
@@ -93,20 +92,17 @@ void GameState::tick()
 	{
 		switch (rand()%4)
 		{
-			case 0: info.playerx = 1; info.playery = 1; break;
-			case 1: info.playerx = 1; info.playery = HEIGHT-2; break;
-			case 2: info.playerx = WIDTH-2; info.playery = HEIGHT-2; break;
-			case 3: info.playerx = WIDTH-2; info.playery = 1; break;
+			case 0: info->playerx = 1; info->playery = 1; break;
+			case 1: info->playerx = 1; info->playery = HEIGHT-2; break;
+			case 2: info->playerx = WIDTH-2; info->playery = HEIGHT-2; break;
+			case 3: info->playerx = WIDTH-2; info->playery = 1; break;
 		}
 
-		info.level.incrementLevel();
-		info.doneMaking = false;
-		board = Board(&info);
+		info->level.incrementLevel();
+		info->doneMaking = false;
+		info->gens = 0;
+		board = Board(info);
 		newGame = false;
-
-		char title[32];
-		sprintf(title, "Maze Of Life - Level %d", info.level.getLevel());
-		SDL_WM_SetCaption(title, NULL);
 	}
 
 	board.tick();
@@ -119,8 +115,8 @@ void GameState::move(int x, int y)
 	if (board.isObstructed(x,y)) return;
 	if ((x==15)&&(y==15)) newGame = true;
 
-	info.playerx = x;
-	info.playery = y;
+	info->playerx = x;
+	info->playery = y;
 }
 
 void GameState::render(SDL_Surface* screen)
@@ -128,20 +124,31 @@ void GameState::render(SDL_Surface* screen)
 	// Paint maze
 	board.render(screen);
 
-	// Paint player
+	// Paint event
 	SDL_Rect block;
-	block.x = info.playerx*16;
-	block.y = info.playery*16;
+	block.x = 15*16;
+	block.y = 15*16;
 	block.w = 16;
 	block.h = 16;
 
-	SDL_FillRect(screen, &block, player_color);
-
-	// Paint event
-	block.x = 15*16;
-	block.y = 15*16;
-
 	SDL_FillRect(screen, &block, event_color);
+
+	if (!info->doneMaking)
+	{
+		SDL_Color fontColor = {0, 0, 0, 0};
+		char levelnum[8];
+		sprintf(levelnum, "%d", info->level.getLevel());
+		SDL_Surface* title = TTF_RenderText_Solid(loadFont(100), levelnum, fontColor);
+		SDL_Rect tSpace = {240-(title->w/2), 240-(title->h/2), title->w, title->h};
+		SDL_FillRect(screen, NULL, info->level.getDeadColor());
+		SDL_BlitSurface(title, NULL, screen, &tSpace);
+	}
+
+	// Paint player
+	block.x = info->playerx*16;
+	block.y = info->playery*16;
+
+	SDL_FillRect(screen, &block, player_color);
 }
 
 GameState::Level::Level()
@@ -292,7 +299,7 @@ void GameState::Board::tick()
 		}
 	}
 
-	if (!info->doneMaking && ++gens > 100) info->doneMaking = true;
+	if (!info->doneMaking && ++info->gens > 50) info->doneMaking = true;
 }
 
 void GameState::Board::incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick)

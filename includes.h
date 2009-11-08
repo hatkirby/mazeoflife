@@ -1,10 +1,14 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_net.h>
+#include <SDL_thread.h>
 #include <stdio.h>
 #include <time.h>
 #include <string>
 #include <vector>
 #include <fstream>
+#include <sstream>
+#include <exception>
 #include "state.h"
 #include "mazeoflife.h"
 #include "resources.h"
@@ -16,3 +20,5 @@
 #include "hslist.h"
 #include "hslocal.h"
 #include "hsnew.h"
+#include "hsglobal.h"
+#include "hssubmit.h"

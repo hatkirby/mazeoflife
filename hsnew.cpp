@@ -38,7 +38,6 @@ NewHighscoreState::NewHighscoreState(int level)
 	rntSpace.w = newName->w;
 	rntSpace.h = newName->h;
 
-	SDL_WM_SetCaption("Maze Of Life - New Highscore!", NULL);
 	SDL_EnableUNICODE(1);
 }
 
@@ -99,7 +98,9 @@ void NewHighscoreState::input(SDL_keysym key)
 					changeState(new GameState());
 
 		                        break;
-				case 1: // Submit score to Global highscore list
+				case 1:
+					changeState(new SubmitHighscoreListState(hsname, level));
+
 					break;
 				case 2:
 					changeState(new TitleState());

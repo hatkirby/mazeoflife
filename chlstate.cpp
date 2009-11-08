@@ -6,8 +6,6 @@ ChooseHighscoreListState::ChooseHighscoreListState()
 	LOADIMAGE(pointer,pointer)
 
 	selection = 0;
-
-	SDL_WM_SetCaption("Maze Of Life - Choose Highscore List", NULL);
 }
 
 void ChooseHighscoreListState::input(SDL_keysym key)
@@ -26,7 +24,9 @@ void ChooseHighscoreListState::input(SDL_keysym key)
 				changeState(new LocalHighscoreListState(false));
 
 				break;
-			case 1: // Go to global highscore list
+			case 1:
+				changeState(new GlobalHighscoreListState());
+
 				break;
 			case 2:
 				changeState(new TitleState());

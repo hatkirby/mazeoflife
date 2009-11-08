@@ -18,4 +18,16 @@ class LocalHighscoreList : public HighscoreList {
 		LocalHighscoreList();
 };
 
+class GlobalHighscoreList : public HighscoreList {
+	public:
+		GlobalHighscoreList();
+		SDL_Surface* render();
+
+	private:
+		typedef HighscoreList super;
+
+	protected:
+		bool fail;
+};
+
 #endif

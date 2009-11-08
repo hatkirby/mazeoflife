@@ -29,6 +29,7 @@ class GameState : public State {
 			int playerx, playery;
 			Level level;
 			bool doneMaking;
+			int gens;
 		};
 
 		class Board
@@ -37,7 +38,6 @@ class GameState : public State {
 				bool blocks[WIDTH][HEIGHT];
 				void incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick);
 				GameState::Info* info;
-				int gens;
 
 			public:
 				Board();
@@ -51,7 +51,7 @@ class GameState : public State {
 		Uint32 player_color;
 		Uint32 event_color;
 		bool newGame;
-		Info info;
+		Info* info;
 		Board board;
 		void move(int x, int y);
 };

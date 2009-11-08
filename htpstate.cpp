@@ -8,8 +8,6 @@ HowToPlayState::HowToPlayState()
 
 	secondPage = false;
 	selection = 0;
-
-	SDL_WM_SetCaption("Maze Of Life - How To Play", NULL);
 }
 
 void HowToPlayState::input(SDL_keysym key)
