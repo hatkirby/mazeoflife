@@ -153,7 +153,7 @@ void GameState::render(SDL_Surface* screen)
 
 GameState::Level::Level()
 {
-	level = 1;
+	level = 0;
 
 	alive[0] = getColor(0, 0, 0); // Black
 	alive[1] = getColor(255, 0, 0); // Red
@@ -178,14 +178,12 @@ bool GameState::Level::checkSquare(int x, int y)
 	switch (level/10+1)
 	{
 		case 1:
-	                return ((x>13)&&(x<16)&&(y>13)&&(y<16));
-		case 2:
 	                return ((x>13)&&(x<17)&&(y>13)&&(y<17));
+		case 2:
 		case 3:
-		case 4:
 	                return ((x>12)&&(x<18)&&(y>12)&&(y<18));
+		case 4:
 		case 5:
-		case 6:
 			return ((x>11)&&(x<19)&&(y>11)&&(y<19));
 		default:
 			return true;
