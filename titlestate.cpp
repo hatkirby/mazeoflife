@@ -2,8 +2,8 @@
 
 TitleState::TitleState()
 {
-	background = SDL_LoadBMP("title.bmp");
-	pointer = SDL_LoadBMP("pointer.bmp");
+	background = SDL_LoadBMP("resources/title.bmp");
+	pointer = SDL_LoadBMP("resources/pointer.bmp");
 
 	selection = 0;
 }

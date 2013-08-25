@@ -2,7 +2,7 @@
 
 SubmitHighscoreListState::SubmitHighscoreListState(char* hsname, int level)
 {
-	pointer = SDL_LoadBMP("pointer.bmp");
+	pointer = SDL_LoadBMP("resources/pointer.bmp");
 
 	this->hsname = hsname;
 	this->level = level;
@@ -38,9 +38,9 @@ int SubmitHighscoreListState::LoadHighscoreList(void* pParam)
 
 	if (lhl->hasFailed())
 	{
-		((SubmitHighscoreListState*)pParam)->options = SDL_LoadBMP("hlo_passartm.bmp");
+		((SubmitHighscoreListState*)pParam)->options = SDL_LoadBMP("resources/hlo_passartm.bmp");
 	} else {
-		((SubmitHighscoreListState*)pParam)->options = SDL_LoadBMP("hlo_paartm.bmp");
+		((SubmitHighscoreListState*)pParam)->options = SDL_LoadBMP("resources/hlo_paartm.bmp");
 	}
 
 	SDL_Rect oSpace = {0, 440, ((SubmitHighscoreListState*)pParam)->options->w, ((SubmitHighscoreListState*)pParam)->options->h};

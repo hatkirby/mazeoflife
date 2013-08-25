@@ -4,8 +4,8 @@ NewHighscoreState::NewHighscoreState(int level)
 {
 	this->level = level;
 
-	options = SDL_LoadBMP("hlo_passartm.bmp");
-	pointer = SDL_LoadBMP("pointer.bmp");
+	options = SDL_LoadBMP("resources/hlo_passartm.bmp");
+	pointer = SDL_LoadBMP("resources/pointer.bmp");
 
 	lhl = new NewHighscoreList(level);
 	newpos = lhl->getNewPos();

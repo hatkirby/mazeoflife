@@ -2,8 +2,8 @@
 
 GlobalHighscoreListState::GlobalHighscoreListState()
 {
-	options = SDL_LoadBMP("hlo_rtm.bmp");
-	pointer = SDL_LoadBMP("pointer.bmp");
+	options = SDL_LoadBMP("resources/hlo_rtm.bmp");
+	pointer = SDL_LoadBMP("resources/pointer.bmp");
 
 	list = SDL_CreateRGBSurface(SDL_SWSURFACE || SDL_SRCCOLORKEY, 480, 480, 32, 0,0,0,0);
 	Uint32 bgColor = SDL_MapRGB(list->format, 255, 255, 255);

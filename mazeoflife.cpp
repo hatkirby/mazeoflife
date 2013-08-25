@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	SDL_WM_SetCaption("Maze Of Life", NULL);
 
 	SDL_Surface* icon;
-	icon = SDL_LoadBMP("icon.bmp");
+	icon = SDL_LoadBMP("resources/icon.bmp");
 	SDL_WM_SetIcon(icon, NULL);
 
 	/*
@@ -118,7 +118,7 @@ Uint32 tick(Uint32 interval, void *param)
 
 TTF_Font* loadFont(int size)
 {
-	TTF_Font* tmpfont = TTF_OpenFont("mono.ttf", size);
+	TTF_Font* tmpfont = TTF_OpenFont("resources/mono.ttf", size);
 
 	if (tmpfont == NULL)
 	{

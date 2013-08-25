@@ -6,12 +6,12 @@ LocalHighscoreListState::LocalHighscoreListState(bool fromGame)
 
 	if (fromGame)
 	{
-		options = SDL_LoadBMP("hlo_paartm.bmp");
+		options = SDL_LoadBMP("resources/hlo_paartm.bmp");
 	} else {
-		options = SDL_LoadBMP("hlo_rtm.bmp");
+		options = SDL_LoadBMP("resources/hlo_rtm.bmp");
 	}
 
-	pointer = SDL_LoadBMP("pointer.bmp");
+	pointer = SDL_LoadBMP("resources/pointer.bmp");
 
 	LocalHighscoreList* lhl = new LocalHighscoreList();
 	list = lhl->render();

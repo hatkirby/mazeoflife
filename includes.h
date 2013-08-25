@@ -1,6 +1,6 @@
 #include <SDL.h>
-#include <SDL_ttf.h>
-#include <SDL_net.h>
+#include <SDL/SDL_ttf.h>
+#include <SDL/SDL_net.h>
 #include <SDL_thread.h>
 #include <stdio.h>
 #include <time.h>
