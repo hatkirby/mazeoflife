@@ -2,9 +2,9 @@
 
 HowToPlayState::HowToPlayState()
 {
-	LOADIMAGE(background1,htp1)
-	LOADIMAGE(background2,htp2)
-	LOADIMAGE(pointer,pointer)
+	background1 = SDL_LoadBMP("htp1.bmp");
+	background2 = SDL_LoadBMP("htp2.bmp");
+	pointer = SDL_LoadBMP("pointer.bmp");
 
 	secondPage = false;
 	selection = 0;

@@ -11,7 +11,6 @@
 #include <exception>
 #include "state.h"
 #include "mazeoflife.h"
-#include "resources.h"
 #include "titlestate.h"
 #include "htpstate.h"
 #include "chlstate.h"

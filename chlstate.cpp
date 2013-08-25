@@ -2,8 +2,8 @@
 
 ChooseHighscoreListState::ChooseHighscoreListState()
 {
-	LOADIMAGE(background,chl)
-	LOADIMAGE(pointer,pointer)
+	background = SDL_LoadBMP("chl.bmp");
+	pointer = SDL_LoadBMP("pointer.bmp");
 
 	selection = 0;
 }
