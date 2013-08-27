@@ -213,6 +213,8 @@ State* PlayGameState::operator() (SDL_Renderer* renderer)
 				}
 			}
 		}
+		
+		SDL_Delay(5);
 	}
 }
 
