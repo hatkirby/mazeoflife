@@ -1,3 +1,7 @@
+#include <SDL.h>
+#include <vector>
+#include "highscore.h"
+
 #ifndef HSLIST_H
 #define HSLIST_H
 

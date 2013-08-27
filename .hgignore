@@ -11,3 +11,4 @@ missing
 install-sh
 depcomp
 mazeoflife
+Makefile

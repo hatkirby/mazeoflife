@@ -1,11 +1,16 @@
-#include "includes.h"
+#include "hslist.h"
+#include <SDL_ttf.h>
+#include <SDL_net.h>
+#include <sstream>
+#include <fstream>
+#include "util.h"
 
 SDL_Surface* HighscoreList::render()
 {
-	SDL_Surface* tmp = SDL_CreateRGBSurface(SDL_SWSURFACE || SDL_SRCCOLORKEY, 480, 480, 32, 0,0,0,0);
+	SDL_Surface* tmp = SDL_CreateRGBSurface(0, 480, 480, 32, 0,0,0,0);
 	Uint32 bgColor = SDL_MapRGB(tmp->format, 255, 255, 255);
 	SDL_FillRect(tmp, NULL, bgColor);
-	SDL_SetColorKey(tmp, SDL_SRCCOLORKEY, bgColor);
+	SDL_SetColorKey(tmp, SDL_TRUE, bgColor);
 	TTF_Font* posFont = loadFont(40);
 	TTF_Font* dataFont = loadFont(25);
 	SDL_Color fontColor = {0, 0, 0, 0};
@@ -181,10 +186,10 @@ SDL_Surface* GlobalHighscoreList::render()
 {
 	if (fail)
 	{
-		SDL_Surface* tmp = SDL_CreateRGBSurface(SDL_SWSURFACE || SDL_SRCCOLORKEY, 480, 480, 32, 0,0,0,0);
+		SDL_Surface* tmp = SDL_CreateRGBSurface(0, 480, 480, 32, 0,0,0,0);
 		Uint32 bgColor = SDL_MapRGB(tmp->format, 255, 255, 255);
 		SDL_FillRect(tmp, NULL, bgColor);
-		SDL_SetColorKey(tmp, SDL_SRCCOLORKEY, bgColor);
+		SDL_SetColorKey(tmp, SDL_TRUE, bgColor);
 		TTF_Font* dataFont = loadFont(25);
 		SDL_Color fontColor = {0, 0, 0, 0};
 		SDL_Surface* text = TTF_RenderText_Blended(dataFont, "Error retrieving highscores", fontColor);

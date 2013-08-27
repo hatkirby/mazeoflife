@@ -1,4 +1,4 @@
-#include "includes.h"
+#include "highscore.h"
 
 Highscore::Highscore(char* name, int level)
 {
