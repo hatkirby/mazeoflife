@@ -1,5 +1,6 @@
 #include "titlestate.h"
 #include "util.h"
+#include "gamestate.h"
 
 State* TitleState::operator() (SDL_Renderer* renderer)
 {
@@ -10,6 +11,11 @@ State* TitleState::operator() (SDL_Renderer* renderer)
 	
 	for (;;)
 	{
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, background, NULL, NULL);
+		applyTexture(renderer, pointer, 136, selection==0?316:(selection==1?350:(selection==2?381:417)));
+		SDL_RenderPresent(renderer);
+		
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -27,7 +33,7 @@ State* TitleState::operator() (SDL_Renderer* renderer)
 				{
 					switch (selection)
 					{
-						//case 0: return new GameState();
+						case 0: return new GameState();
 						//case 1: return new HowToPlayState();
 						//case 2: return new ChooseHighscoreListState();
 						case 3:	return NULL;
@@ -35,10 +41,5 @@ State* TitleState::operator() (SDL_Renderer* renderer)
 				}
 			}
 		}
-		
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, background, NULL, NULL);
-		applyTexture(renderer, pointer, 136, selection==0?316:(selection==1?350:(selection==2?381:417)));
-		SDL_RenderPresent(renderer);
 	}
 }
