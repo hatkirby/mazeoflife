@@ -9,4 +9,14 @@ class TitleState : public State {
 		State* operator() (SDL_Renderer* renderer);
 };
 
+class HowToPlayState : public State {
+	public:
+		State* operator() (SDL_Renderer* renderer);
+};
+
+class HowToPlayPageTwoState : public State {
+	public:
+		State* operator() (SDL_Renderer* renderer);
+};
+
 #endif
