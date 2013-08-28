@@ -3,8 +3,26 @@
 #include <SDL_net.h>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 #include "util.h"
 #include "titlestate.h"
+#include "gamestate.h"
+
+struct hslist_comp {
+	bool operator() (Highscore* lhs, Highscore* rhs) const
+	{
+		return (lhs->getLevel() > rhs->getLevel());
+	}
+} hslist_comp_i;
+
+void resetRanks(hslist_t in)
+{
+	int i=1;
+	for (hslist_t::iterator it = in.begin(); it != in.end(); ++it, ++i)
+	{
+		((Highscore*)*it)->setRank(i);
+	}
+}
 
 SDL_Surface* HighscoreList::render()
 {
@@ -16,27 +34,28 @@ SDL_Surface* HighscoreList::render()
 	TTF_Font* dataFont = loadFont(25);
 	SDL_Color fontColor = {0, 0, 0, 0};
 
-	for (int i=0; i<hslist.size(); i++)
+	int i=0;
+	for (hslist_t::iterator it = hslist.begin(); it != hslist.end(); ++it, ++i)
 	{
-		Highscore h = hslist[i];
-
+		Highscore* h = *it;
+		
 		int posw, posh;
         char pos[3]; // 2 max characters in rank plus the colon at the end
-        sprintf(pos, "%d:", h.getRank());
+        sprintf(pos, "%d:", h->getRank());
 		TTF_SizeText(posFont, pos, &posw, &posh);
 		SDL_Rect posSpace = {0, (i+1)*40, posw, posh};
 		SDL_BlitSurface(TTF_RenderText_Blended(posFont, pos, fontColor), NULL, tmp, &posSpace);
 
 		int namew, nameh;
 		char name[26]; // 25 max characters in username plus the space at the beginning
-		sprintf(name, " %s", h.getName());
+		sprintf(name, " %s", h->getName());
 		TTF_SizeText(dataFont, name, &namew, &nameh);
 		SDL_Rect nameSpace = {posw, (i+1)*40+((posh/2)-(nameh/2)), namew, nameh};
 		SDL_BlitSurface(TTF_RenderText_Blended(dataFont, name, fontColor), NULL, tmp, &nameSpace);
 
 		int lvlw, lvlh;
 		char lvl[10]; // 10 max characters in level (based off the fact that 2^32-1 is 10 characters long, and is the highest int)
-		sprintf(lvl, "%d", h.getLevel());
+		sprintf(lvl, "%d", h->getLevel());
 		TTF_SizeText(dataFont, lvl, &lvlw, &lvlh);
 		SDL_Rect lvlSpace = {480-lvlw, (i+1)*40+((posh/2)-(nameh/2)), lvlw, lvlh};
 		SDL_BlitSurface(TTF_RenderText_Blended(dataFont, lvl, fontColor), NULL, tmp, &lvlSpace);
@@ -45,9 +64,9 @@ SDL_Surface* HighscoreList::render()
 	return tmp;
 }
 
-std::vector<Highscore> HighscoreList::getLocalHighscores()
+hslist_t HighscoreList::getLocalHighscores()
 {
-	std::vector<Highscore> temp = std::vector<Highscore>();
+	hslist_t temp;
 
 	std::ifstream exists(getDataFile());
 	if (exists)
@@ -68,8 +87,8 @@ std::vector<Highscore> HighscoreList::getLocalHighscores()
 			fscanf(hslist, namelens, name);
 			fscanf(hslist, "%d%*c", &score);
 
-			Highscore h = Highscore(name, score);
-			h.setRank(i+1);
+			Highscore* h = new Highscore(name, score);
+			h->setRank(i+1);
 
 			temp.push_back(h);
 		}
@@ -80,7 +99,7 @@ std::vector<Highscore> HighscoreList::getLocalHighscores()
 	return temp;
 }
 
-std::vector<Highscore> HighscoreList::getGlobalHighscores()
+hslist_t HighscoreList::getGlobalHighscores()
 {
 	IPaddress ipaddress;
 
@@ -117,7 +136,7 @@ std::vector<Highscore> HighscoreList::getGlobalHighscores()
 		download.getline(temps,256);
 	}
 
-	std::vector<Highscore> temp = std::vector<Highscore>();
+	hslist_t temp;
 	int scores;
 	download.getline(temps, 256);
 	if (sscanf(temps, "%d%*c", &scores) != 1)
@@ -156,8 +175,8 @@ std::vector<Highscore> HighscoreList::getGlobalHighscores()
 			throw 4;
 		}
 
-		Highscore h = Highscore(name, score);
-		h.setRank(i+1);
+		Highscore* h = new Highscore(name, score);
+		h->setRank(i+1);
 
 		temp.push_back(h);
 	}
@@ -168,6 +187,35 @@ std::vector<Highscore> HighscoreList::getGlobalHighscores()
 LocalHighscoreList::LocalHighscoreList()
 {
 	this->hslist = getLocalHighscores();
+}
+
+int LocalHighscoreList::addHighscore(Highscore* h)
+{
+	hslist.push_back(h);
+	std::sort(hslist.begin(), hslist.end(), hslist_comp_i);
+	resetRanks(hslist);
+	
+	if (hslist.size() > 10)
+	{
+		hslist.resize(10);
+	}
+	
+	return h->getRank();
+}
+
+void LocalHighscoreList::writeHighscores()
+{
+	FILE* hsfile = fopen(getDataFile(), "w");
+	fprintf(hsfile, "%d ", (int) this->hslist.size());
+
+	for (hslist_t::iterator it = hslist.begin(); it != this->hslist.end(); it++)
+	{
+		Highscore* h = *it;
+
+		fprintf(hsfile, "%d%s%d ", (int) strlen(h->getName()), h->getName(), h->getLevel());
+	}
+
+	fclose(hsfile);
 }
 
 GlobalHighscoreList::GlobalHighscoreList()
@@ -290,6 +338,64 @@ State* DisplayLocalHighscoreListState::operator() (SDL_Renderer* renderer)
 	}
 }
 
+State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Renderer* renderer)
+{
+	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
+	
+	LocalHighscoreList* lhl = new LocalHighscoreList();
+	SDL_Surface* list_s = lhl->render();
+	SDL_Color fontColor = {0, 0, 0, 0};
+	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "Highscore List", fontColor);
+	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
+	SDL_BlitSurface(title, NULL, list_s, &tSpace);
+	SDL_FreeSurface(title);
+
+	SDL_Surface* options_s = SDL_LoadBMP("resources/hlo_paartm.bmp");
+	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
+	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
+	SDL_FreeSurface(options_s);
+	
+	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
+	SDL_FreeSurface(list_s);
+	
+	int selection = 0;
+	SDL_Event e;
+	
+	for (;;)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, list, NULL, NULL);
+		applyTexture(renderer, pointer, selection==0?52:225, 447);
+		SDL_RenderPresent(renderer);
+		
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				return NULL;
+			} else if (e.type == SDL_KEYDOWN)
+			{
+				if ((e.key.keysym.sym == SDLK_LEFT) && (selection != 0))
+				{
+					selection--;
+				} else if ((e.key.keysym.sym == SDLK_RIGHT) && (selection != 1))
+				{
+					selection++;
+				} else if (e.key.keysym.sym == SDLK_RETURN)
+				{
+					switch (selection)
+					{
+						case 0: return new GameState();
+						case 1: return new TitleState();
+					}
+				}
+				
+			}
+		}
+	}
+}
+
 State* DisplayGlobalHighscoreListState::operator() (SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
@@ -394,5 +500,191 @@ int DisplayGlobalHighscoreListState::LoadHighscoreList(void* pParam)
 		SDL_UnlockMutex(parent->m);
 	} else {
 		printf("Couldn't lock mutex: %s\n", SDL_GetError());
+	}
+}
+
+EnterHighscoreState::EnterHighscoreState(int level)
+{
+	this->level = level;
+}
+
+State* EnterHighscoreState::operator() (SDL_Renderer* renderer)
+{
+	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
+	
+	// Render highscore list
+	LocalHighscoreList* lhl = new LocalHighscoreList();
+	char* emp = new char[1];
+	emp[0] = 0;
+	Highscore* h = new Highscore(emp, level);
+	int newpos = lhl->addHighscore(h);
+	
+	SDL_Surface* list_s = lhl->render();
+	
+	SDL_Color fontColor = {0, 0, 0, 0};
+	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "New Highscore!", fontColor);
+	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
+	SDL_BlitSurface(title, NULL, list_s, &tSpace);
+	SDL_FreeSurface(title);
+
+	this->lp = 0;
+	this->hsname = (char*) calloc(25, sizeof(char));
+
+	SDL_Surface* text = TTF_RenderText_Blended(loadFont(25), "Enter Your Name", fontColor);
+	SDL_Rect oSpace = {240-(text->w/2), 440, text->w, text->h};
+	SDL_BlitSurface(text, NULL, list_s, &oSpace);
+	SDL_FreeSurface(text);
+	
+	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
+	SDL_FreeSurface(list_s);
+
+	int selection = 0;
+	SDL_Event e;
+	
+	int posw, posh;
+    char pos[3]; // 2 max characters in rank plus the colon at the end
+	sprintf(pos, "%d:", newpos);
+	char name[26]; // 25 max characters in username plus the space at the beginning
+	sprintf(name, " %s", hsname);
+	SDL_Surface* newName_s = TTF_RenderText_Blended(loadFont(25), name, fontColor);
+	TTF_SizeText(loadFont(40), pos, &posw, &posh);
+	SDL_Rect rntSpace;
+	rntSpace.x = posw;
+	rntSpace.y = newpos*40+((posh/2)-(newName_s->h/2));
+	rntSpace.w = newName_s->w;
+	rntSpace.h = newName_s->h;
+	newName = SDL_CreateTextureFromSurface(renderer, newName_s);
+	SDL_FreeSurface(newName_s);
+	
+	for (;;)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+
+		SDL_Rect eSpace = {0, newpos*40, 480, 40};
+		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+		SDL_RenderFillRect(renderer, &eSpace);
+	
+		SDL_RenderCopy(renderer, list, NULL, NULL);
+		SDL_RenderCopy(renderer, newName, NULL, &rntSpace);
+		
+		SDL_RenderPresent(renderer);
+		
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				return NULL;
+			} else if (e.type == SDL_KEYDOWN)
+			{
+				if ((e.key.keysym.sym == SDLK_BACKSPACE) && (lp > 0))
+				{
+					hsname[--lp] = 0;
+
+					SDL_Color fontColor = {0, 0, 0, 0};
+					char name[26]; // 25 max characters in username plus the space at the beginning
+					sprintf(name, " %s", hsname);
+					newName_s = TTF_RenderText_Blended(loadFont(25), name, fontColor);
+					rntSpace.w = newName_s->w;
+					rntSpace.h = newName_s->h;
+					newName = SDL_CreateTextureFromSurface(renderer, newName_s);
+					SDL_FreeSurface(newName_s);
+				} else if ((e.key.keysym.sym == SDLK_RETURN) && (hsname[0] != 0))
+				{
+					lhl = new LocalHighscoreList();
+					Highscore* h2 = new Highscore(hsname, level);
+					lhl->addHighscore(h2);
+					lhl->writeHighscores();
+					
+					return new NewHighscoreState(h2);
+				}
+			} else if (e.type == SDL_TEXTINPUT)
+			{
+				if (((*e.text.text & 0xFF80) == 0) && (*e.text.text >= 32 && *e.text.text < 127) && (lp < 25))
+				{
+					hsname[lp++] = *e.text.text & 0x7f;
+					hsname[lp] = 0;
+
+					SDL_Color fontColor = {0, 0, 0, 0};
+					char name[26]; // 25 max characters in username plus the space at the beginning
+					sprintf(name, " %s", hsname);
+					newName_s = TTF_RenderText_Blended(loadFont(25), name, fontColor);
+					rntSpace.w = newName_s->w;
+					rntSpace.h = newName_s->h;
+					newName = SDL_CreateTextureFromSurface(renderer, newName_s);
+					SDL_FreeSurface(newName_s);
+				}
+			}
+		}
+	}
+}
+
+NewHighscoreState::NewHighscoreState(Highscore* h)
+{
+	this->h = h;
+}
+
+State* NewHighscoreState::operator() (SDL_Renderer* renderer)
+{
+	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
+	
+	// Render highscore list
+	LocalHighscoreList* lhl = new LocalHighscoreList();
+	SDL_Surface* list_s = lhl->render();
+	
+	SDL_Color fontColor = {0, 0, 0, 0};
+	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "New Highscore!", fontColor);
+	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
+	SDL_BlitSurface(title, NULL, list_s, &tSpace);
+	SDL_FreeSurface(title);
+	
+	SDL_Surface* options_s = SDL_LoadBMP("resources/hlo_passartm.bmp");
+	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
+	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
+	SDL_FreeSurface(options_s);
+
+	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
+	SDL_FreeSurface(list_s);
+	
+	int selection = 0;
+	SDL_Event e;
+	
+	for (;;)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+
+		SDL_Rect eSpace = {0, h->getRank()*40, 480, 40};
+		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+		SDL_RenderFillRect(renderer, &eSpace);
+	
+		SDL_RenderCopy(renderer, list, NULL, NULL);
+		applyTexture(renderer, pointer, selection==0?13:(selection==1?138:284), 448);
+		SDL_RenderPresent(renderer);
+		
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				return NULL;
+			} else if (e.type == SDL_KEYDOWN)
+			{
+				if ((e.key.keysym.sym == SDLK_LEFT) && (selection != 0))
+				{
+					selection--;
+				} else if ((e.key.keysym.sym == SDLK_RIGHT) && (selection != 2))
+				{
+					selection++;
+				} else if (e.key.keysym.sym == SDLK_RETURN)
+				{
+					switch (selection)
+					{
+						case 0: return new GameState();
+						//case 1: return new SubmitHighscoreListState(hsname, level);
+						case 2: return new TitleState();
+					}
+				}
+			}
+		}
 	}
 }

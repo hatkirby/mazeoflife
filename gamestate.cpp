@@ -4,6 +4,8 @@
 #include "mazeoflife.h"
 #include "highscore.h"
 #include "titlestate.h"
+#include <fstream>
+#include "hslist.h"
 
 class GameBoard {
 	public:
@@ -214,7 +216,48 @@ State* PlayGameState::operator() (SDL_Renderer* renderer)
 						}
 					
 					case SDLK_ESCAPE:
-						return new TitleState();
+						std::ifstream exists(getDataFile());
+						if (exists)
+						{
+							FILE* hslist = fopen(getDataFile(), "r");
+							int scores;
+							Highscore* h;
+
+							fscanf(hslist, "%d%*c", &scores);
+
+							if (scores < 10)
+							{
+								fclose(hslist);
+
+								return new EnterHighscoreState(level);
+							} else {
+								for (int i=0; i<scores; i++)
+								{
+									int namelen;
+									char namelens[4];
+									char* name = (char*) calloc(25, sizeof(char));
+									int score;
+
+									fscanf(hslist, "%d", &namelen);
+									sprintf(namelens, "%%%dc", namelen);
+									fscanf(hslist, namelens, name);
+									fscanf(hslist, "%d%*c", &score);
+
+									h = new Highscore(name, score);
+								}
+
+								fclose(hslist);
+
+								if (h->getLevel() < level)
+								{
+									return new EnterHighscoreState(level);
+								} else {
+									return new DisplayAndReturnLocalHighscoreListState();
+								}
+							}
+						} else {
+							return new EnterHighscoreState(level);
+						}
 				}
 			}
 		}
