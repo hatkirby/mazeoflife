@@ -37,6 +37,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
+	SDL_Surface* icon = SDL_LoadBMP("resources/icon.bmp");
+	SDL_SetWindowIcon(window, icon);
+	
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (renderer == NULL)
 	{
