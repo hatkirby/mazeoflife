@@ -1,6 +1,7 @@
 #include "titlestate.h"
 #include "util.h"
 #include "gamestate.h"
+#include "hslist.h"
 
 State* TitleState::operator() (SDL_Renderer* renderer)
 {
@@ -35,7 +36,7 @@ State* TitleState::operator() (SDL_Renderer* renderer)
 					{
 						case 0: return new GameState();
 						//case 1: return new HowToPlayState();
-						//case 2: return new ChooseHighscoreListState();
+						case 2: return new ChooseHighscoreListState();
 						case 3:	return NULL;
 					}
 				}

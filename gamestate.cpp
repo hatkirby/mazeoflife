@@ -2,6 +2,8 @@
 #include <SDL_ttf.h>
 #include "util.h"
 #include "mazeoflife.h"
+#include "highscore.h"
+#include "titlestate.h"
 
 class GameBoard {
 	public:
@@ -210,6 +212,9 @@ State* PlayGameState::operator() (SDL_Renderer* renderer)
 						} else {
 							break;
 						}
+					
+					case SDLK_ESCAPE:
+						return new TitleState();
 				}
 			}
 		}
