@@ -22,7 +22,7 @@ class GameBoard {
 class LoadGameState : public State {
 	public:
 		LoadGameState(int level);
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 		
 	private:
 		int level;
@@ -31,7 +31,7 @@ class LoadGameState : public State {
 class PlayGameState : public State {
 	public:
 		PlayGameState(int level, GameBoard* board, int playerx, int playery);
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 	
 	private:
 		bool move(int x, int y);
@@ -81,7 +81,7 @@ void incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick, int 
 	}
 }
 
-State* GameState::operator() (SDL_Renderer* renderer)
+State* GameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	return new LoadGameState(0);
 }
@@ -91,8 +91,12 @@ LoadGameState::LoadGameState(int m_level)
 	level = m_level;
 }
 
-State* LoadGameState::operator() (SDL_Renderer* renderer)
+State* LoadGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
+	char* wintitle = new char[50];
+	sprintf(wintitle, "Maze Of Life - Level %d", level);
+	SDL_SetWindowTitle(window, wintitle);
+		
 	// Randomly place the player in a corner
 	int playerx, playery;
 	switch (rand()%4)
@@ -145,7 +149,7 @@ PlayGameState::PlayGameState(int m_level, GameBoard* m_board, int m_playerx, int
 	playery = m_playery;
 }
 
-State* PlayGameState::operator() (SDL_Renderer* renderer)
+State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Event e;
 	
@@ -216,6 +220,8 @@ State* PlayGameState::operator() (SDL_Renderer* renderer)
 						}
 					
 					case SDLK_ESCAPE:
+						SDL_SetWindowTitle(window, "");
+						
 						std::ifstream exists(getDataFile());
 						if (exists)
 						{

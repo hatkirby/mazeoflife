@@ -6,7 +6,7 @@
 
 class GameState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 #endif

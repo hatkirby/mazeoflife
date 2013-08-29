@@ -43,22 +43,22 @@ class GlobalHighscoreList : public HighscoreList {
 
 class ChooseHighscoreListState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 class DisplayLocalHighscoreListState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 class DisplayAndReturnLocalHighscoreListState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 class DisplayGlobalHighscoreListState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 		
 	protected:
 		SDL_Surface* list_s;
@@ -73,7 +73,7 @@ class DisplayGlobalHighscoreListState : public State {
 class EnterHighscoreState : public State {
 	public:
 		EnterHighscoreState(int level);
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 		
 	private:
 		int level;
@@ -85,7 +85,7 @@ class EnterHighscoreState : public State {
 class NewHighscoreState : public State {
 	public:
 		NewHighscoreState(Highscore* h);
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 		
 	private:
 		Highscore* h;

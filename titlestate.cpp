@@ -3,7 +3,7 @@
 #include "gamestate.h"
 #include "hslist.h"
 
-State* TitleState::operator() (SDL_Renderer* renderer)
+State* TitleState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* background = loadImage(renderer, "resources/title.bmp");
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
@@ -45,7 +45,7 @@ State* TitleState::operator() (SDL_Renderer* renderer)
 	}
 }
 
-State* HowToPlayState::operator() (SDL_Renderer* renderer)
+State* HowToPlayState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* background = loadImage(renderer, "resources/htp1.bmp");
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
@@ -89,7 +89,7 @@ State* HowToPlayState::operator() (SDL_Renderer* renderer)
 	}
 }
 
-State* HowToPlayPageTwoState::operator() (SDL_Renderer* renderer)
+State* HowToPlayPageTwoState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* background = loadImage(renderer, "resources/htp2.bmp");
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");

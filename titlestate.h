@@ -6,17 +6,17 @@
 
 class TitleState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 class HowToPlayState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 class HowToPlayPageTwoState : public State {
 	public:
-		State* operator() (SDL_Renderer* renderer);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 };
 
 #endif

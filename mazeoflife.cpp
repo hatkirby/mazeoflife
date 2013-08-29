@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	State* state = new TitleState();
 	while (state != NULL)
 	{
-		state = (*state)(renderer);
+		state = (*state)(window, renderer);
 	}
 	
 	SDL_DestroyRenderer(renderer);

@@ -251,7 +251,7 @@ SDL_Surface* GlobalHighscoreList::render()
 	}
 }
 
-State* ChooseHighscoreListState::operator() (SDL_Renderer* renderer)
+State* ChooseHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* background = loadImage(renderer, "resources/chl.bmp");
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
@@ -292,7 +292,7 @@ State* ChooseHighscoreListState::operator() (SDL_Renderer* renderer)
 	}
 }
 
-State* DisplayLocalHighscoreListState::operator() (SDL_Renderer* renderer)
+State* DisplayLocalHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	
@@ -338,7 +338,7 @@ State* DisplayLocalHighscoreListState::operator() (SDL_Renderer* renderer)
 	}
 }
 
-State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Renderer* renderer)
+State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	
@@ -396,7 +396,7 @@ State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Renderer* render
 	}
 }
 
-State* DisplayGlobalHighscoreListState::operator() (SDL_Renderer* renderer)
+State* DisplayGlobalHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	
@@ -508,7 +508,7 @@ EnterHighscoreState::EnterHighscoreState(int level)
 	this->level = level;
 }
 
-State* EnterHighscoreState::operator() (SDL_Renderer* renderer)
+State* EnterHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	
@@ -624,7 +624,7 @@ NewHighscoreState::NewHighscoreState(Highscore* h)
 	this->h = h;
 }
 
-State* NewHighscoreState::operator() (SDL_Renderer* renderer)
+State* NewHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	
