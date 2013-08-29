@@ -231,6 +231,87 @@ GlobalHighscoreList::GlobalHighscoreList()
 	}
 }
 
+GlobalHighscoreList::GlobalHighscoreList(Highscore* h)
+{
+	fail = false;
+	
+	try
+	{
+		IPaddress ipaddress;
+
+		if (SDLNet_ResolveHost(&ipaddress, "other.fourisland.com", 80) == -1)
+		{
+			printf("Could not resolve host \"other.fourisland.com\": %s\n", SDLNet_GetError());
+			throw 1;
+		}
+
+		TCPsocket tcpsock = SDLNet_TCP_Open(&ipaddress);
+		if (!tcpsock)
+		{
+			printf("Could not connect to host \"other.fourisland.com\": %s\n", SDLNet_GetError());
+			throw 2;
+		}
+
+		char body[256];
+		sprintf(body, "name=%s&level=%d", h->getName(), h->getLevel());
+		char headers[256];
+		sprintf(headers, "POST /mol/hslist.php?add HTTP/1.1\nHost: other.fourisland.com\nUser-Agent: Maze Of Life v2.0\nAccept: text/plain\nKeep-Alive: 300\nConnection: keep-alive\nContent-Type: application/x-www-form-urlencoded\nContent-Length: %d\n\n%s\n", (int) strlen(body), body);
+		if (SDLNet_TCP_Send(tcpsock, headers, strlen(headers)+1) < strlen(headers))
+		{
+			printf("Connection closed by peer: %s\n", SDLNet_GetError());
+			throw 3;
+		}
+
+		std::stringstream download(std::stringstream::in | std::stringstream::out);
+		char hslist[1024];
+		SDLNet_TCP_Recv(tcpsock, hslist, 1024);
+		download << hslist;
+		SDLNet_TCP_Close(tcpsock);
+
+		char temps[256];
+		download.getline(temps,256);
+		while (strlen(temps) != 1)
+		{
+			download.getline(temps,256);
+		}
+
+		int rank;
+		download.getline(temps, 256);
+		if (sscanf(temps, "%d%*c", &rank) != 1)
+		{
+			printf("Recieved data is of an invalid format: %s\n", temps);
+			throw 4;
+		}
+
+		this->hslist = getGlobalHighscores();
+
+		if (this->hslist.empty())
+		{
+			printf("Global Highscore List cannot be empty after adding a score to it.\n");
+			throw 5;
+		}
+
+		if (rank > 10)
+		{
+			h->setRank(rank);
+
+			this->hslist[9] = h;
+		} else {
+			this->hslist.push_back(h);
+			std::sort(this->hslist.begin(), this->hslist.end(), hslist_comp_i);
+			resetRanks(this->hslist);
+	
+			if (this->hslist.size() > 10)
+			{
+				this->hslist.resize(10);
+			}
+		}
+	} catch (int e)
+	{
+		fail = true;
+	}
+}
+
 SDL_Surface* GlobalHighscoreList::render()
 {
 	if (fail)
@@ -249,6 +330,11 @@ SDL_Surface* GlobalHighscoreList::render()
 	} else {
 		return super::render();
 	}
+}
+
+bool GlobalHighscoreList::didFail()
+{
+	return fail;
 }
 
 State* ChooseHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
@@ -390,7 +476,6 @@ State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Window* window, 
 						case 1: return new TitleState();
 					}
 				}
-				
 			}
 		}
 	}
@@ -680,8 +765,233 @@ State* NewHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer
 					switch (selection)
 					{
 						case 0: return new GameState();
-						//case 1: return new SubmitHighscoreListState(hsname, level);
+						case 1: return new SubmitHighscoreState(h);
 						case 2: return new TitleState();
+					}
+				}
+			}
+		}
+	}
+}
+
+SubmitHighscoreState::SubmitHighscoreState(Highscore* h)
+{
+	this->h = h;
+}
+
+State* SubmitHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
+{
+	SDL_Surface* list_s = SDL_CreateRGBSurface(0, 480, 480, 32, 0,0,0,0);
+	Uint32 bgColor = SDL_MapRGB(list_s->format, 255, 255, 255);
+	SDL_FillRect(list_s, NULL, bgColor);
+	SDL_SetColorKey(list_s, SDL_TRUE, bgColor);
+	TTF_Font* dataFont = loadFont(25);
+	SDL_Color fontColor = {0, 0, 0, 0};
+	SDL_Surface* text = TTF_RenderText_Blended(dataFont, "Sending highscore....", fontColor);
+	SDL_Rect aSpace = {240-(text->w/2), 240-(text->h/2), text->w, text->h};
+	SDL_BlitSurface(text, NULL, list_s, &aSpace);
+	SDL_FreeSurface(text);
+
+	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "Highscore List", fontColor);
+	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
+	SDL_BlitSurface(title, NULL, list_s, &tSpace);
+	SDL_FreeSurface(title);
+	
+	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
+	SDL_FreeSurface(list_s);
+	
+	// Start submitting score
+	m = SDL_CreateMutex();
+	SDL_CreateThread(&SubmitHighscore, "SubmitHighscore", this);
+	
+	SDL_Event e;
+	
+	for (;;)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, list, NULL, NULL);
+		SDL_RenderPresent(renderer);
+		
+		if (SDL_LockMutex(m) == 0)
+		{
+			if (lhl != NULL)
+			{
+				SDL_UnlockMutex(m);
+				SDL_DestroyMutex(m);
+				
+				if (lhl->didFail())
+				{
+					return new FailedSubmittingHighscoreState(h);
+				} else {
+					return new SubmittedHighscoreState(lhl, h);
+				}
+			} else {
+				SDL_UnlockMutex(m);
+			}
+		}
+		
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				SDL_DestroyMutex(m);
+				
+				return NULL;
+			}
+		}
+	}
+}
+
+int SubmitHighscoreState::SubmitHighscore(void* pParam)
+{
+	SubmitHighscoreState* parent = (SubmitHighscoreState*) pParam;
+	if (SDL_LockMutex(parent->m) == 0)
+	{
+		parent->lhl = new GlobalHighscoreList(parent->h);
+		
+		SDL_UnlockMutex(parent->m);
+	} else {
+		printf("Could not lock mutex: %s\n", SDL_GetError());
+	}
+}
+
+FailedSubmittingHighscoreState::FailedSubmittingHighscoreState(Highscore* h)
+{
+	this->h = h;
+}
+
+State* FailedSubmittingHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
+{
+	SDL_Surface* list_s = SDL_CreateRGBSurface(0, 480, 480, 32, 0,0,0,0);
+	Uint32 bgColor = SDL_MapRGB(list_s->format, 255, 255, 255);
+	SDL_FillRect(list_s, NULL, bgColor);
+	SDL_SetColorKey(list_s, SDL_TRUE, bgColor);
+	TTF_Font* dataFont = loadFont(25);
+	SDL_Color fontColor = {0, 0, 0, 0};
+	SDL_Surface* text = TTF_RenderText_Blended(dataFont, "Error submitting highscores", fontColor);
+	SDL_Rect tSpace = {240-(text->w/2), 240-(text->h/2), text->w, text->h};
+	SDL_BlitSurface(text, NULL, list_s, &tSpace);
+	SDL_FreeSurface(text);
+	
+	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "Highscore List", fontColor);
+	SDL_Rect aSpace = {240-(title->w/2), 0, title->w, title->h};
+	SDL_BlitSurface(title, NULL, list_s, &aSpace);
+	SDL_FreeSurface(title);
+
+	SDL_Surface* options_s = SDL_LoadBMP("resources/hlo_passartm.bmp");
+	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
+	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
+	SDL_FreeSurface(options_s);
+	
+	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
+	SDL_FreeSurface(list_s);
+	
+	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
+	int selection = 0;
+	SDL_Event e;
+	
+	for (;;)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, list, NULL, NULL);
+		applyTexture(renderer, pointer, selection==0?13:(selection==1?138:284), 448);
+		SDL_RenderPresent(renderer);
+		
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				return NULL;
+			} else if (e.type == SDL_KEYDOWN)
+			{
+				if ((e.key.keysym.sym == SDLK_LEFT) && (selection != 0))
+				{
+					selection--;
+				} else if ((e.key.keysym.sym == SDLK_RIGHT) && (selection != 2))
+				{
+					selection++;
+				} else if (e.key.keysym.sym == SDLK_RETURN)
+				{
+					switch (selection)
+					{
+						case 0: return new GameState();
+						case 1: return new SubmitHighscoreState(h);
+						case 2: return new TitleState();
+					}
+				}
+			}
+		}
+	}
+}
+
+SubmittedHighscoreState::SubmittedHighscoreState(GlobalHighscoreList* lhl, Highscore* h)
+{
+	this->lhl = lhl;
+	this->h = h;
+}
+
+State* SubmittedHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
+{
+	SDL_Surface* list_s = lhl->render();
+	
+	SDL_Color fontColor = {0, 0, 0, 0};
+	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "Highscore List", fontColor);
+	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
+	SDL_BlitSurface(title, NULL, list_s, &tSpace);
+	SDL_FreeSurface(title);
+	
+	SDL_Surface* options_s = SDL_LoadBMP("resources/hlo_paartm.bmp");
+	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
+	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
+	SDL_FreeSurface(options_s);
+	
+	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
+	SDL_FreeSurface(list_s);
+	
+	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
+	int selection = 0;
+	SDL_Event e;
+	
+	int newpos = h->getRank();
+	if (newpos > 10)
+	{
+		newpos = 10;
+	}
+	
+	for (;;)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+		
+		SDL_Rect eSpace = {0, newpos*40, 480, 40};
+		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+		SDL_RenderFillRect(renderer, &eSpace);
+		
+		SDL_RenderCopy(renderer, list, NULL, NULL);
+		applyTexture(renderer, pointer, selection==0?52:225, 447);
+		SDL_RenderPresent(renderer);
+		
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				return NULL;
+			} else if (e.type == SDL_KEYDOWN)
+			{
+				if ((e.key.keysym.sym == SDLK_LEFT) && (selection != 0))
+				{
+					selection--;
+				} else if ((e.key.keysym.sym == SDLK_RIGHT) && (selection != 1))
+				{
+					selection++;
+				} else if (e.key.keysym.sym == SDLK_RETURN)
+				{
+					switch (selection)
+					{
+						case 0: return new GameState();
+						case 1: return new TitleState();
 					}
 				}
 			}

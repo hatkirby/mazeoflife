@@ -32,7 +32,9 @@ class LocalHighscoreList : public HighscoreList {
 class GlobalHighscoreList : public HighscoreList {
 	public:
 		GlobalHighscoreList();
+		GlobalHighscoreList(Highscore* h);
 		SDL_Surface* render();
+		bool didFail();
 
 	private:
 		typedef HighscoreList super;
@@ -88,6 +90,39 @@ class NewHighscoreState : public State {
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
 		
 	private:
+		Highscore* h;
+};
+
+class SubmitHighscoreState : public State {
+	public:
+		SubmitHighscoreState(Highscore* h);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
+		
+	protected:
+		Highscore* h;
+		SDL_mutex* m;
+		GlobalHighscoreList* lhl;
+		
+	private:
+		static int SubmitHighscore(void* pParam);
+};
+
+class FailedSubmittingHighscoreState : public State {
+	public:
+		FailedSubmittingHighscoreState(Highscore* h);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
+		
+	private:
+		Highscore* h;
+};
+
+class SubmittedHighscoreState : public State {
+	public:
+		SubmittedHighscoreState(GlobalHighscoreList* lhl, Highscore* h);
+		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
+		
+	private:
+		GlobalHighscoreList* lhl;
 		Highscore* h;
 };
 
