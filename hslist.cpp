@@ -8,6 +8,7 @@
 #include "titlestate.h"
 #include "gamestate.h"
 
+// We want to be able to sort Highscore objects in descending score order
 struct hslist_comp {
 	bool operator() (Highscore* lhs, Highscore* rhs) const
 	{
@@ -15,6 +16,7 @@ struct hslist_comp {
 	}
 } hslist_comp_i;
 
+// resetRanks : sets the rank of all Highscore objects in a hslist_t to their (one-based) index in the list
 void resetRanks(hslist_t in)
 {
 	int i=1;
