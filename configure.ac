@@ -23,8 +23,8 @@ AC_SUBST([SDLTTF_CXXFLAGS])
 
 AC_ARG_WITH([sdl2-ttf-lib-path],
         [AS_HELP_STRING([--with-sdl2-ttf-lib-path], [location of the SDL2_ttf library])],
-        [SDLTTF_LIBS="-L$withval -lsdl2_ttf"],
-        [SDLTTF_LIBS="-lsdl2_ttf"])
+        [SDLTTF_LIBS="-L$withval -lSDL2_ttf"],
+        [SDLTTF_LIBS="-lSDL2_ttf"])
 AC_SUBST([SDLTTF_LIBS])
 
 dnl Check for SDL2_net
@@ -37,8 +37,8 @@ AC_SUBST([SDLNET_CXXFLAGS])
 
 AC_ARG_WITH([sdl2-net-lib-path],
         [AS_HELP_STRING([--with-sdl2-net-lib-path], [location of the SDL2_net library])],
-        [SDLNET_LIBS="-L$withval -lsdl2_net"],
-        [SDLNET_LIBS="-lsdl2_net"])
+        [SDLNET_LIBS="-L$withval -lSDL2_net"],
+        [SDLNET_LIBS="-lSDL2_net"])
 AC_SUBST([SDLNET_LIBS])
 
 AC_OUTPUT
