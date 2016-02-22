@@ -6,17 +6,32 @@
 #include "titlestate.h"
 #include <fstream>
 #include "hslist.h"
+#include <set>
+#include <bitset>
+#include <tuple>
+#include <algorithm>
+#include <vector>
+#include <deque>
+#include <iostream>
+#include <sstream>
 
 class GameBoard {
 	public:
-		GameBoard(int level);
+		GameBoard(int level, int playerx, int playery);
 		void tick(int playerx, int playery);
-		void render(SDL_Renderer* renderer);
-		bool isObstructed(int x, int y);
+		void render(SDL_Renderer* renderer, int level) const;
+		bool isObstructed(int x, int y) const;
+    bool operator<(const GameBoard& other) const;
 		
 	private:
-		int level;
-		bool blocks[WIDTH][HEIGHT];
+    void initialize(int level);
+    int solve(int playerx, int playery) const;
+    std::string dump() const;
+    
+    std::bitset<WIDTH*HEIGHT> blocks;
+    std::bitset<WIDTH*HEIGHT> updateable;
+    int oldx;
+    int oldy;
 };
 
 class LoadGameState : public State {
@@ -65,7 +80,7 @@ void setRendererDeadColor(SDL_Renderer* renderer, int level)
 	}
 }
 
-void incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick, int playerx, int playery)
+void incrementIfNeighbor(int x, int y, std::bitset<WIDTH*HEIGHT>& temp, int* tick, int playerx, int playery)
 {
 	int nx = x;
 	int ny = y;
@@ -74,7 +89,7 @@ void incrementIfNeighbor(int x, int y, bool temp[WIDTH][HEIGHT], int* tick, int 
 
 	if (!((nx!=x)&&(ny!=y)))
 	{
-		if ((temp[x][y])||((playerx==x)&&(playery==y))||((x==15)&&(y==15)))
+		if ((temp[x+y*WIDTH])||((playerx==x)&&(playery==y))||((x==15)&&(y==15)))
 		{
 			++*tick;
 		}
@@ -128,11 +143,7 @@ State* LoadGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 	SDL_RenderPresent(renderer);
 	
 	// Do 50 gens of Conway
-	GameBoard* board = new GameBoard(level);
-	for (int i=0; i<50; i++)
-	{
-		board->tick(playerx, playery);
-	}
+	GameBoard* board = new GameBoard(level, playerx, playery);
 	
 	// Wait a bit
 	SDL_Delay(500);
@@ -159,7 +170,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 		board->tick(playerx, playery);
 		
 		// Paint board
-		board->render(renderer);
+		board->render(renderer, level);
 		
 		// Paint event
 		SDL_Rect block;
@@ -292,90 +303,103 @@ bool PlayGameState::move(int x, int y)
 	return false;
 }
 
-GameBoard::GameBoard(int m_level)
+GameBoard::GameBoard(int level, int playerx, int playery)
 {
-	level = m_level;
-	
-	for (int y=0; y<HEIGHT; y++)
-	{
-		for (int x=0; x<WIDTH; x++)
-		{
-			blocks[x][y] = false;
-			
-			switch (level/10+1)
-			{
-				case 1:
-					if ((x>13)&&(x<17)&&(y>13)&&(y<17))
-					{
-						blocks[x][y] = rand() % 2;
-					}
-					break;
-				case 2:
-				case 3:
-			        if ((x>12)&&(x<18)&&(y>12)&&(y<18))
-					{
-						blocks[x][y] = rand() % 2;
-					}
-					break;
-				case 4:
-				case 5:
-					if ((x>11)&&(x<19)&&(y>11)&&(y<19))
-					{
-						blocks[x][y] = rand() % 2;
-					}
-					break;
-				default:
-					blocks[x][y] = rand() % 2;
-			}
-		}
-	}
-	
-	blocks[15][15] = false;
+	for (;;)
+  {
+    initialize(level);
+    updateable.set();
+    oldx = playerx;
+    oldy = playery;
+    
+    for (int i=0; i<50; i++)
+    {
+      tick(playerx, playery);
+    }
+    
+    int states = solve(playerx, playery);
+    if (states != 0)
+    {
+      break;
+    } else {
+      std::cout << "Impossible board: " << playerx << "," << playery << "," << dump() << std::endl;
+    }
+  }
 }
 
 void GameBoard::tick(int playerx, int playery)
 {
-	bool temp[WIDTH][HEIGHT];
-	int x,y;
-	for (x=0;x<WIDTH;x++)
-	{
-		for (y=0;y<HEIGHT;y++)
-		{
-			temp[x][y] = blocks[x][y];
-		}
-	}
+  std::bitset<WIDTH*HEIGHT> temp {blocks};
+  std::bitset<WIDTH*HEIGHT> tempdateable {updateable};
+  if ((playerx != oldx) || (playery != oldy))
+  {
+    for (int dy = -1; dy <= 1; dy++)
+    {
+      for (int dx = -1; dx <=1; dx++)
+      {
+        int tdx = oldx+dx;
+        int tdy = oldy+dy;
+        wrap(&tdx, &tdy);
+        tempdateable.set(tdx+tdy*WIDTH);
+        
+        tdx = playerx+dx;
+        tdy = playery+dy;
+        wrap(&tdx, &tdy);
+        tempdateable.set(tdx+tdy*WIDTH);
+      }
+    }
+  }
+  
+  oldx = playerx;
+  oldy = playery;
+  
+  updateable.reset();
 
-	for (x=0;x<WIDTH;x++)
+	for (int y=0;y<HEIGHT;y++)
 	{
-		for (y=0;y<HEIGHT;y++)
+		for (int x=0;x<WIDTH;x++)
 		{
-			if ((x==15)&&(y==15))
+			if (((x==15)&&(y==15)) || (!tempdateable[x+y*WIDTH]))
 			{
 				continue;
 			}
 
 			int neighbors = 0;
 
-			incrementIfNeighbor(x-1,y-1,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x-1,y,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x-1,y+1,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x,y-1,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x,y+1,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x+1,y-1,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x+1,y,temp,&neighbors, playerx, playery);
-			incrementIfNeighbor(x+1,y+1,temp,&neighbors, playerx, playery);
+			incrementIfNeighbor(x-1, y-1, temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x-1, y  , temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x-1, y+1, temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x  , y-1, temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x  , y+1, temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x+1, y-1, temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x+1, y  , temp, &neighbors, playerx, playery);
+			incrementIfNeighbor(x+1, y+1, temp, &neighbors, playerx, playery);
 
-			if (temp[x][y])
+			if (temp[x+y*WIDTH])
 			{
-				blocks[x][y] = ((neighbors >= 1) && (neighbors <= 4));
+				blocks[x+y*WIDTH] = ((neighbors >= 1) && (neighbors <= 4));
 			} else {
-				blocks[x][y] = (neighbors == 3);
+				blocks[x+y*WIDTH] = (neighbors == 3);
 			}
+      
+      if (temp[x+y*WIDTH] != blocks[x+y*WIDTH])
+      {
+        for (int dy = -1; dy <= 1; dy++)
+        {
+          for (int dx = -1; dx <=1; dx++)
+          {
+            int tdx = x+dx;
+            int tdy = y+dy;
+            wrap(&tdx, &tdy);
+            updateable.set(tdx+tdy*WIDTH);
+          }
+        }
+      }
 		}
 	}
 }
 
-void GameBoard::render(SDL_Renderer* renderer)
+void GameBoard::render(SDL_Renderer* renderer, int level) const
 {
 	SDL_Rect block;
 	block.w = 16;
@@ -388,7 +412,7 @@ void GameBoard::render(SDL_Renderer* renderer)
 			block.x = x*16;
 			block.y = y*16;
 			
-			if (blocks[x][y])
+			if (blocks[x+y*WIDTH])
 			{
 				setRendererAliveColor(renderer, level);
 			} else {
@@ -400,7 +424,150 @@ void GameBoard::render(SDL_Renderer* renderer)
 	}
 }
 
-bool GameBoard::isObstructed(int x, int y)
+bool GameBoard::isObstructed(int x, int y) const
 {
-	return blocks[x][y];
+	return blocks[x+y*WIDTH];
+}
+
+void GameBoard::initialize(int level)
+{
+	for (int y=0; y<HEIGHT; y++)
+	{
+		for (int x=0; x<WIDTH; x++)
+		{
+			blocks[x+y*WIDTH] = false;
+			
+			switch (level/10+1)
+			{
+				case 1:
+					if ((x>13)&&(x<17)&&(y>13)&&(y<17))
+					{
+						blocks[x+y*WIDTH] = rand() % 2;
+					}
+					break;
+				case 2:
+				case 3:
+			     if ((x>12)&&(x<18)&&(y>12)&&(y<18))
+					{
+						blocks[x+y*WIDTH] = rand() % 2;
+					}
+					break;
+				case 4:
+				case 5:
+					if ((x>11)&&(x<19)&&(y>11)&&(y<19))
+					{
+						blocks[x+y*WIDTH] = rand() % 2;
+					}
+					break;
+				default:
+					blocks[x+y*WIDTH] = rand() % 2;
+			}
+		}
+	}
+	
+	blocks[15+15*WIDTH] = false;
+}
+
+bool GameBoard::operator<(const GameBoard& other) const
+{
+  for (int i = WIDTH*HEIGHT-1; i >= 0; i--)
+  {
+    if (blocks[i] ^ other.blocks[i])
+    {
+      return other.blocks[i];
+    }
+  }
+  
+  return false;
+}
+
+int GameBoard::solve(int playerx, int playery) const
+{
+  std::deque<std::tuple<int, int, GameBoard, int>> search;
+  std::set<std::tuple<int, int, GameBoard>> done;
+  search.push_front(std::make_tuple(playerx, playery, *this, 0));
+  
+  bool exists = false;
+  while (!search.empty())
+  {
+    auto cur = search.front();
+    search.pop_front();
+    
+    int cpx = std::get<0>(cur);
+    int cpy = std::get<1>(cur);
+    GameBoard& cbr = std::get<2>(cur);
+    int cns = std::get<3>(cur);
+    
+    auto cdn = std::make_tuple(cpx, cpy, cbr);
+    done.insert(cdn);
+    
+    if (((cpx == 15) && ((cpy == 14) || (cpy == 16))) || ((cpy == 15) && ((cpx == 14) || (cpx == 16))))
+    {
+      exists = true;
+      break;
+    }
+    
+    if (cns >= 100)
+    {
+      continue;
+    }
+    
+    GameBoard immnext {cbr};
+    immnext.tick(cpx, cpy);
+    if (immnext.blocks != cbr.blocks)
+    {
+      if (done.count(std::make_tuple(cpx, cpy, immnext)) == 0)
+      {
+        search.push_front(std::make_tuple(cpx, cpy, immnext, cns));
+        
+        continue;
+      }
+    }
+    
+    std::vector<std::pair<int, int>> dirchanges {{cpx-1,cpy}, {cpx,cpy-1}, {cpx+1,cpy}, {cpx,cpy+1}};
+    std::sort(std::begin(dirchanges), std::end(dirchanges), [] (const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) {
+      int lhd = sqrt(pow(15 - lhs.first, 2.0) + pow(15 - lhs.second, 2.0));
+      int rhd = sqrt(pow(15 - rhs.first, 2.0) + pow(15 - rhs.second, 2.0));
+      
+      return lhd > rhd;
+    });
+    
+    for (auto& dirchange : dirchanges)
+    {
+      GameBoard next {cbr};
+      int npx = cpx + dirchange.first;
+      int npy = cpy + dirchange.second;
+      wrap(&npx, &npy);
+      
+      if (!next.isObstructed(npx, npy))
+      {
+        next.tick(npx, npy);
+      
+        if (done.count(std::make_tuple(npx, npy, next)) == 0)
+        {
+          search.push_front(std::make_tuple(npx, npy, next, cns+1));
+        }
+      }
+    }
+  }
+  
+  if (exists)
+  {
+    return done.size();
+  } else {
+    return 0;
+  }
+}
+
+std::string GameBoard::dump() const
+{
+  std::stringstream output;
+  output << std::hex;
+  for (int i=0; i<WIDTH*HEIGHT/4; i++)
+  {
+    int chunk = (8 * blocks[i*4]) + (4 * blocks[i*4+1]) + (2 * blocks[i*4+2]) + blocks[i*4+3];
+    output << chunk;
+  }
+  
+  return output.str();
 }

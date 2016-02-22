@@ -14,4 +14,6 @@ include_directories(
 )
 
 add_executable(mazeoflife highscore.cpp hslist.cpp mazeoflife.cpp util.cpp titlestate.cpp gamestate.cpp)
+set_property(TARGET mazeoflife PROPERTY CXX_STANDARD 11)
+set_property(TARGET mazeoflife PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(mazeoflife ${SDL2_LIBRARY} ${SDL2_TTF_LIBRARY} ${SDL2_NET_LIBRARIES})
