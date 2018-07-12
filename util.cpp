@@ -11,7 +11,7 @@ void wrap(int* x, int* y)
 	{
 		*x = *x-WIDTH;
 	}
-  
+
   if (*y < 0)
 	{
 		*y = HEIGHT-(0-*y);
@@ -53,10 +53,10 @@ SDL_Texture* loadImage(SDL_Renderer* renderer, std::string file)
 		std::cout << SDL_GetError() << std::endl;
 		return NULL;
 	}
-	
+
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
-	
+
 	return texture;
 }
 
@@ -66,6 +66,6 @@ void applyTexture(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
 	pos.x = x;
 	pos.y = y;
 	SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
-	
+
 	SDL_RenderCopy(renderer, tex, NULL, &pos);
 }

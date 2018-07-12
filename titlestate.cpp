@@ -9,14 +9,14 @@ State* TitleState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, background, NULL, NULL);
 		applyTexture(renderer, pointer, 136, selection==0?316:(selection==1?350:(selection==2?381:417)));
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -51,14 +51,14 @@ State* HowToPlayState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, background, NULL, NULL);
 		applyTexture(renderer, pointer, selection==0?74:216, 430);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -95,14 +95,14 @@ State* HowToPlayPageTwoState::operator() (SDL_Window* window, SDL_Renderer* rend
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, background, NULL, NULL);
 		applyTexture(renderer, pointer, selection==0?45:238, 430);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)

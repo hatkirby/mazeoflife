@@ -61,13 +61,13 @@ class DisplayAndReturnLocalHighscoreListState : public State {
 class DisplayGlobalHighscoreListState : public State {
 	public:
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	protected:
 		SDL_Surface* list_s;
 		SDL_Texture* list;
 		GlobalHighscoreList* lhl;
 		SDL_mutex* m;
-		
+
 	private:
 		static int LoadHighscoreList(void* pParam);
 };
@@ -76,7 +76,7 @@ class EnterHighscoreState : public State {
 	public:
 		EnterHighscoreState(int level);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	private:
 		int level;
 		int lp;
@@ -88,7 +88,7 @@ class NewHighscoreState : public State {
 	public:
 		NewHighscoreState(Highscore* h);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	private:
 		Highscore* h;
 };
@@ -97,12 +97,12 @@ class SubmitHighscoreState : public State {
 	public:
 		SubmitHighscoreState(Highscore* h);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	protected:
 		Highscore* h;
 		SDL_mutex* m;
 		GlobalHighscoreList* lhl;
-		
+
 	private:
 		static int SubmitHighscore(void* pParam);
 };
@@ -111,7 +111,7 @@ class FailedSubmittingHighscoreState : public State {
 	public:
 		FailedSubmittingHighscoreState(Highscore* h);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	private:
 		Highscore* h;
 };
@@ -120,7 +120,7 @@ class SubmittedHighscoreState : public State {
 	public:
 		SubmittedHighscoreState(GlobalHighscoreList* lhl, Highscore* h);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	private:
 		GlobalHighscoreList* lhl;
 		Highscore* h;

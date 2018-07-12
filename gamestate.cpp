@@ -22,12 +22,12 @@ class GameBoard {
 		void render(SDL_Renderer* renderer, int level) const;
 		bool isObstructed(int x, int y) const;
     bool operator<(const GameBoard& other) const;
-		
+
 	private:
     void initialize(int level);
     int solve(int playerx, int playery) const;
     std::string dump() const;
-    
+
     std::bitset<WIDTH*HEIGHT> blocks;
     std::bitset<WIDTH*HEIGHT> updateable;
     int oldx;
@@ -38,7 +38,7 @@ class LoadGameState : public State {
 	public:
 		LoadGameState(int level);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-		
+
 	private:
 		int level;
 };
@@ -47,7 +47,7 @@ class PlayGameState : public State {
 	public:
 		PlayGameState(int level, GameBoard* board, int playerx, int playery);
 		State* operator() (SDL_Window* window, SDL_Renderer* renderer);
-	
+
 	private:
 		bool move(int x, int y);
 		int level;
@@ -111,7 +111,7 @@ State* LoadGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 	char* wintitle = new char[50];
 	sprintf(wintitle, "Maze Of Life - Level %d", level);
 	SDL_SetWindowTitle(window, wintitle);
-		
+
 	// Randomly place the player in a corner
 	int playerx, playery;
 	switch (rand()%4)
@@ -121,11 +121,11 @@ State* LoadGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 		case 2: playerx = WIDTH-2; playery = HEIGHT-2; break;
 		case 3: playerx = WIDTH-2; playery = 1; break;
 	}
-	
+
 	// Display the level number
 	setRendererDeadColor(renderer, level);
 	SDL_RenderClear(renderer);
-	
+
 	TTF_Font* font = loadFont(100);
 	SDL_Color fontColor = {0, 0, 0, 0};
 	char levelnum[8];
@@ -133,21 +133,21 @@ State* LoadGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 	SDL_Surface* dispsurf = TTF_RenderText_Solid(font, levelnum, fontColor);
 	SDL_Texture* disptext = SDL_CreateTextureFromSurface(renderer, dispsurf);
 	SDL_FreeSurface(dispsurf);
-	
+
 	SDL_Rect pos;
 	SDL_QueryTexture(disptext, NULL, NULL, &pos.w, &pos.h);
 	pos.x = 240-(pos.w/2);
 	pos.y = 240-(pos.h/2);
-	
+
 	SDL_RenderCopy(renderer, disptext, NULL, &pos);
 	SDL_RenderPresent(renderer);
-	
+
 	// Do 50 gens of Conway
 	GameBoard* board = new GameBoard(level, playerx, playery);
-	
+
 	// Wait a bit
 	SDL_Delay(500);
-	
+
 	// Start the level
 	return new PlayGameState(level, board, playerx, playery);
 }
@@ -163,15 +163,15 @@ PlayGameState::PlayGameState(int m_level, GameBoard* m_board, int m_playerx, int
 State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		// Tick board
 		board->tick(playerx, playery);
-		
+
 		// Paint board
 		board->render(renderer, level);
-		
+
 		// Paint event
 		SDL_Rect block;
 		block.w = 16;
@@ -180,15 +180,15 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 		block.y = 15*16;
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &block);
-		
+
 		// Paint player
 		block.x = playerx*16;
 		block.y = playery*16;
 		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 		SDL_RenderFillRect(renderer, &block);
-		
+
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -205,7 +205,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 						} else {
 							break;
 						}
-						
+
 					case SDLK_RIGHT:
 						if (move(playerx+1, playery))
 						{
@@ -213,7 +213,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 						} else {
 							break;
 						}
-						
+
 					case SDLK_UP:
 						if (move(playerx, playery-1))
 						{
@@ -221,7 +221,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 						} else {
 							break;
 						}
-					
+
 					case SDLK_DOWN:
 						if (move(playerx, playery+1))
 						{
@@ -229,10 +229,10 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 						} else {
 							break;
 						}
-					
+
 					case SDLK_ESCAPE:
 						SDL_SetWindowTitle(window, "");
-						
+
 						std::ifstream exists(getDataFile());
 						if (exists)
 						{
@@ -278,7 +278,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 				}
 			}
 		}
-		
+
 		SDL_Delay(5);
 	}
 }
@@ -286,7 +286,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 bool PlayGameState::move(int x, int y)
 {
 	wrap(&x, &y);
-	
+
 	// Are we at the event?
 	if ((x==15)&&(y==15))
 	{
@@ -299,7 +299,7 @@ bool PlayGameState::move(int x, int y)
 		playerx = x;
 		playery = y;
 	}
-	
+
 	return false;
 }
 
@@ -311,12 +311,12 @@ GameBoard::GameBoard(int level, int playerx, int playery)
     updateable.set();
     oldx = playerx;
     oldy = playery;
-    
+
     for (int i=0; i<50; i++)
     {
       tick(playerx, playery);
     }
-    
+
     int states = solve(playerx, playery);
     if (states != 0)
     {
@@ -341,7 +341,7 @@ void GameBoard::tick(int playerx, int playery)
         int tdy = oldy+dy;
         wrap(&tdx, &tdy);
         tempdateable.set(tdx+tdy*WIDTH);
-        
+
         tdx = playerx+dx;
         tdy = playery+dy;
         wrap(&tdx, &tdy);
@@ -349,10 +349,10 @@ void GameBoard::tick(int playerx, int playery)
       }
     }
   }
-  
+
   oldx = playerx;
   oldy = playery;
-  
+
   updateable.reset();
 
 	for (int y=0;y<HEIGHT;y++)
@@ -381,7 +381,7 @@ void GameBoard::tick(int playerx, int playery)
 			} else {
 				blocks[x+y*WIDTH] = (neighbors == 3);
 			}
-      
+
       if (temp[x+y*WIDTH] != blocks[x+y*WIDTH])
       {
         for (int dy = -1; dy <= 1; dy++)
@@ -404,21 +404,21 @@ void GameBoard::render(SDL_Renderer* renderer, int level) const
 	SDL_Rect block;
 	block.w = 16;
 	block.h = 16;
-	
+
 	for (int y=0; y<HEIGHT; y++)
 	{
 		for (int x=0; x<WIDTH; x++)
 		{
 			block.x = x*16;
 			block.y = y*16;
-			
+
 			if (blocks[x+y*WIDTH])
 			{
 				setRendererAliveColor(renderer, level);
 			} else {
 				setRendererDeadColor(renderer, level);
 			}
-			
+
 			SDL_RenderFillRect(renderer, &block);
 		}
 	}
@@ -436,7 +436,7 @@ void GameBoard::initialize(int level)
 		for (int x=0; x<WIDTH; x++)
 		{
 			blocks[x+y*WIDTH] = false;
-			
+
 			switch (level/10+1)
 			{
 				case 1:
@@ -464,7 +464,7 @@ void GameBoard::initialize(int level)
 			}
 		}
 	}
-	
+
 	blocks[15+15*WIDTH] = false;
 }
 
@@ -477,7 +477,7 @@ bool GameBoard::operator<(const GameBoard& other) const
       return other.blocks[i];
     }
   }
-  
+
   return false;
 }
 
@@ -486,32 +486,32 @@ int GameBoard::solve(int playerx, int playery) const
   std::deque<std::tuple<int, int, GameBoard, int>> search;
   std::set<std::tuple<int, int, GameBoard>> done;
   search.push_front(std::make_tuple(playerx, playery, *this, 0));
-  
+
   bool exists = false;
   while (!search.empty())
   {
     auto cur = search.front();
     search.pop_front();
-    
+
     int cpx = std::get<0>(cur);
     int cpy = std::get<1>(cur);
     GameBoard& cbr = std::get<2>(cur);
     int cns = std::get<3>(cur);
-    
+
     auto cdn = std::make_tuple(cpx, cpy, cbr);
     done.insert(cdn);
-    
+
     if (((cpx == 15) && ((cpy == 14) || (cpy == 16))) || ((cpy == 15) && ((cpx == 14) || (cpx == 16))))
     {
       exists = true;
       break;
     }
-    
+
     if (cns >= 100)
     {
       continue;
     }
-    
+
     GameBoard immnext {cbr};
     immnext.tick(cpx, cpy);
     if (immnext.blocks != cbr.blocks)
@@ -519,30 +519,30 @@ int GameBoard::solve(int playerx, int playery) const
       if (done.count(std::make_tuple(cpx, cpy, immnext)) == 0)
       {
         search.push_front(std::make_tuple(cpx, cpy, immnext, cns));
-        
+
         continue;
       }
     }
-    
+
     std::vector<std::pair<int, int>> dirchanges {{cpx-1,cpy}, {cpx,cpy-1}, {cpx+1,cpy}, {cpx,cpy+1}};
     std::sort(std::begin(dirchanges), std::end(dirchanges), [] (const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) {
       int lhd = sqrt(pow(15 - lhs.first, 2.0) + pow(15 - lhs.second, 2.0));
       int rhd = sqrt(pow(15 - rhs.first, 2.0) + pow(15 - rhs.second, 2.0));
-      
+
       return lhd > rhd;
     });
-    
+
     for (auto& dirchange : dirchanges)
     {
       GameBoard next {cbr};
       int npx = cpx + dirchange.first;
       int npy = cpy + dirchange.second;
       wrap(&npx, &npy);
-      
+
       if (!next.isObstructed(npx, npy))
       {
         next.tick(npx, npy);
-      
+
         if (done.count(std::make_tuple(npx, npy, next)) == 0)
         {
           search.push_front(std::make_tuple(npx, npy, next, cns+1));
@@ -550,7 +550,7 @@ int GameBoard::solve(int playerx, int playery) const
       }
     }
   }
-  
+
   if (exists)
   {
     return done.size();
@@ -568,6 +568,6 @@ std::string GameBoard::dump() const
     int chunk = (8 * blocks[i*4]) + (4 * blocks[i*4+1]) + (2 * blocks[i*4+2]) + blocks[i*4+3];
     output << chunk;
   }
-  
+
   return output.str();
 }

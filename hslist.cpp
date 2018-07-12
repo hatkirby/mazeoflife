@@ -40,7 +40,7 @@ SDL_Surface* HighscoreList::render()
 	for (hslist_t::iterator it = hslist.begin(); it != hslist.end(); ++it, ++i)
 	{
 		Highscore* h = *it;
-		
+
 		int posw, posh;
         char pos[4]; // 2 max characters in rank plus the colon at the end, plus terminator
         sprintf(pos, "%d:", h->getRank());
@@ -196,12 +196,12 @@ int LocalHighscoreList::addHighscore(Highscore* h)
 	hslist.push_back(h);
 	std::sort(hslist.begin(), hslist.end(), hslist_comp_i);
 	resetRanks(hslist);
-	
+
 	if (hslist.size() > 10)
 	{
 		hslist.resize(10);
 	}
-	
+
 	return h->getRank();
 }
 
@@ -236,7 +236,7 @@ GlobalHighscoreList::GlobalHighscoreList()
 GlobalHighscoreList::GlobalHighscoreList(Highscore* h)
 {
 	fail = false;
-	
+
 	try
 	{
 		IPaddress ipaddress;
@@ -302,7 +302,7 @@ GlobalHighscoreList::GlobalHighscoreList(Highscore* h)
 			this->hslist.push_back(h);
 			std::sort(this->hslist.begin(), this->hslist.end(), hslist_comp_i);
 			resetRanks(this->hslist);
-	
+
 			if (this->hslist.size() > 10)
 			{
 				this->hslist.resize(10);
@@ -345,14 +345,14 @@ State* ChooseHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* r
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, background, NULL, NULL);
 		applyTexture(renderer, pointer, 127, selection==0?306:(selection==1?336:396));
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -383,7 +383,7 @@ State* ChooseHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* r
 State* DisplayLocalHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
-	
+
 	LocalHighscoreList* lhl = new LocalHighscoreList();
 	SDL_Surface* list_s = lhl->render();
 	SDL_Color fontColor = {0, 0, 0, 0};
@@ -396,12 +396,12 @@ State* DisplayLocalHighscoreListState::operator() (SDL_Window* window, SDL_Rende
 	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
 	SDL_FreeSurface(options_s);
-	
+
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -409,7 +409,7 @@ State* DisplayLocalHighscoreListState::operator() (SDL_Window* window, SDL_Rende
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		applyTexture(renderer, pointer, 137, 449);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -429,7 +429,7 @@ State* DisplayLocalHighscoreListState::operator() (SDL_Window* window, SDL_Rende
 State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
-	
+
 	LocalHighscoreList* lhl = new LocalHighscoreList();
 	SDL_Surface* list_s = lhl->render();
 	SDL_Color fontColor = {0, 0, 0, 0};
@@ -442,13 +442,13 @@ State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Window* window, 
 	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
 	SDL_FreeSurface(options_s);
-	
+
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -456,7 +456,7 @@ State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Window* window, 
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		applyTexture(renderer, pointer, selection==0?52:225, 447);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -486,11 +486,11 @@ State* DisplayAndReturnLocalHighscoreListState::operator() (SDL_Window* window, 
 State* DisplayGlobalHighscoreListState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
-	
+
 	// Display loading message
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
-	
+
 	SDL_Surface* list_s = SDL_CreateRGBSurface(0, 480, 480, 32, 0,0,0,0);
 	Uint32 bgColor = SDL_MapRGB(list_s->format, 255, 255, 255);
 	SDL_FillRect(list_s, NULL, bgColor);
@@ -511,18 +511,18 @@ State* DisplayGlobalHighscoreListState::operator() (SDL_Window* window, SDL_Rend
 	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
 	SDL_FreeSurface(options_s);
-	
+
 	list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	m = SDL_CreateMutex();
-	
+
 	// Start downloading scores
 	SDL_CreateThread(&LoadHighscoreList, "LoadHighscoreList", this);
-	
+
 	// Parse keyboard events
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		if (SDL_LockMutex(m) == 0)
@@ -541,35 +541,35 @@ State* DisplayGlobalHighscoreListState::operator() (SDL_Window* window, SDL_Rend
 				SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 				SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
 				SDL_FreeSurface(options_s);
-	
+
 				list = SDL_CreateTextureFromSurface(renderer, list_s);
 				SDL_FreeSurface(list_s);
-			
+
 				lhl = NULL;
 			}
-			
+
 			SDL_UnlockMutex(m);
 		}
-		
+
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		applyTexture(renderer, pointer, 137, 449);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
 			{
 				SDL_DestroyMutex(m);
-				
+
 				return NULL;
 			} else if (e.type == SDL_KEYDOWN)
 			{
 				if (e.key.keysym.sym == SDLK_RETURN)
 				{
 					SDL_DestroyMutex(m);
-					
+
 					return new ChooseHighscoreListState();
 				}
 			}
@@ -583,7 +583,7 @@ int DisplayGlobalHighscoreListState::LoadHighscoreList(void* pParam)
 	if (SDL_LockMutex(parent->m) == 0)
 	{
 		parent->lhl = new GlobalHighscoreList();
-		
+
 		SDL_UnlockMutex(parent->m);
 	} else {
 		printf("Couldn't lock mutex: %s\n", SDL_GetError());
@@ -598,16 +598,16 @@ EnterHighscoreState::EnterHighscoreState(int level)
 State* EnterHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
-	
+
 	// Render highscore list
 	LocalHighscoreList* lhl = new LocalHighscoreList();
 	char* emp = new char[1];
 	emp[0] = 0;
 	Highscore* h = new Highscore(emp, level);
 	int newpos = lhl->addHighscore(h);
-	
+
 	SDL_Surface* list_s = lhl->render();
-	
+
 	SDL_Color fontColor = {0, 0, 0, 0};
 	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "New Highscore!", fontColor);
 	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
@@ -621,13 +621,13 @@ State* EnterHighscoreState::operator() (SDL_Window* window, SDL_Renderer* render
 	SDL_Rect oSpace = {240-(text->w/2), 440, text->w, text->h};
 	SDL_BlitSurface(text, NULL, list_s, &oSpace);
 	SDL_FreeSurface(text);
-	
+
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
 
 	int selection = 0;
 	SDL_Event e;
-	
+
 	int posw, posh;
     char pos[3]; // 2 max characters in rank plus the colon at the end
 	sprintf(pos, "%d:", newpos);
@@ -642,7 +642,7 @@ State* EnterHighscoreState::operator() (SDL_Window* window, SDL_Renderer* render
 	rntSpace.h = newName_s->h;
 	newName = SDL_CreateTextureFromSurface(renderer, newName_s);
 	SDL_FreeSurface(newName_s);
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -651,12 +651,12 @@ State* EnterHighscoreState::operator() (SDL_Window* window, SDL_Renderer* render
 		SDL_Rect eSpace = {0, newpos*40, 480, 40};
 		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 		SDL_RenderFillRect(renderer, &eSpace);
-	
+
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		SDL_RenderCopy(renderer, newName, NULL, &rntSpace);
-		
+
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -682,7 +682,7 @@ State* EnterHighscoreState::operator() (SDL_Window* window, SDL_Renderer* render
 					Highscore* h2 = new Highscore(hsname, level);
 					lhl->addHighscore(h2);
 					lhl->writeHighscores();
-					
+
 					return new NewHighscoreState(h2);
 				}
 			} else if (e.type == SDL_TEXTINPUT)
@@ -714,17 +714,17 @@ NewHighscoreState::NewHighscoreState(Highscore* h)
 State* NewHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
-	
+
 	// Render highscore list
 	LocalHighscoreList* lhl = new LocalHighscoreList();
 	SDL_Surface* list_s = lhl->render();
-	
+
 	SDL_Color fontColor = {0, 0, 0, 0};
 	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "New Highscore!", fontColor);
 	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
 	SDL_BlitSurface(title, NULL, list_s, &tSpace);
 	SDL_FreeSurface(title);
-	
+
 	SDL_Surface* options_s = SDL_LoadBMP("resources/hlo_passartm.bmp");
 	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
@@ -732,10 +732,10 @@ State* NewHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer
 
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -744,11 +744,11 @@ State* NewHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer
 		SDL_Rect eSpace = {0, h->getRank()*40, 480, 40};
 		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 		SDL_RenderFillRect(renderer, &eSpace);
-	
+
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		applyTexture(renderer, pointer, selection==0?13:(selection==1?138:284), 448);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -798,30 +798,30 @@ State* SubmitHighscoreState::operator() (SDL_Window* window, SDL_Renderer* rende
 	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
 	SDL_BlitSurface(title, NULL, list_s, &tSpace);
 	SDL_FreeSurface(title);
-	
+
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	// Start submitting score
 	m = SDL_CreateMutex();
 	SDL_CreateThread(&SubmitHighscore, "SubmitHighscore", this);
-	
+
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		SDL_RenderPresent(renderer);
-		
+
 		if (SDL_LockMutex(m) == 0)
 		{
 			if (lhl != NULL)
 			{
 				SDL_UnlockMutex(m);
 				SDL_DestroyMutex(m);
-				
+
 				if (lhl->didFail())
 				{
 					return new FailedSubmittingHighscoreState(h);
@@ -832,13 +832,13 @@ State* SubmitHighscoreState::operator() (SDL_Window* window, SDL_Renderer* rende
 				SDL_UnlockMutex(m);
 			}
 		}
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
 			{
 				SDL_DestroyMutex(m);
-				
+
 				return NULL;
 			}
 		}
@@ -851,7 +851,7 @@ int SubmitHighscoreState::SubmitHighscore(void* pParam)
 	if (SDL_LockMutex(parent->m) == 0)
 	{
 		parent->lhl = new GlobalHighscoreList(parent->h);
-		
+
 		SDL_UnlockMutex(parent->m);
 	} else {
 		printf("Could not lock mutex: %s\n", SDL_GetError());
@@ -875,7 +875,7 @@ State* FailedSubmittingHighscoreState::operator() (SDL_Window* window, SDL_Rende
 	SDL_Rect tSpace = {240-(text->w/2), 240-(text->h/2), text->w, text->h};
 	SDL_BlitSurface(text, NULL, list_s, &tSpace);
 	SDL_FreeSurface(text);
-	
+
 	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "Highscore List", fontColor);
 	SDL_Rect aSpace = {240-(title->w/2), 0, title->w, title->h};
 	SDL_BlitSurface(title, NULL, list_s, &aSpace);
@@ -885,14 +885,14 @@ State* FailedSubmittingHighscoreState::operator() (SDL_Window* window, SDL_Rende
 	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
 	SDL_FreeSurface(options_s);
-	
+
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	int selection = 0;
 	SDL_Event e;
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -900,7 +900,7 @@ State* FailedSubmittingHighscoreState::operator() (SDL_Window* window, SDL_Rende
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		applyTexture(renderer, pointer, selection==0?13:(selection==1?138:284), 448);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
@@ -937,44 +937,44 @@ SubmittedHighscoreState::SubmittedHighscoreState(GlobalHighscoreList* lhl, Highs
 State* SubmittedHighscoreState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 {
 	SDL_Surface* list_s = lhl->render();
-	
+
 	SDL_Color fontColor = {0, 0, 0, 0};
 	SDL_Surface* title = TTF_RenderText_Blended(loadFont(40), "Highscore List", fontColor);
 	SDL_Rect tSpace = {240-(title->w/2), 0, title->w, title->h};
 	SDL_BlitSurface(title, NULL, list_s, &tSpace);
 	SDL_FreeSurface(title);
-	
+
 	SDL_Surface* options_s = SDL_LoadBMP("resources/hlo_paartm.bmp");
 	SDL_Rect oSpace = {0, 440, options_s->w, options_s->h};
 	SDL_BlitSurface(options_s, NULL, list_s, &oSpace);
 	SDL_FreeSurface(options_s);
-	
+
 	SDL_Texture* list = SDL_CreateTextureFromSurface(renderer, list_s);
 	SDL_FreeSurface(list_s);
-	
+
 	SDL_Texture* pointer = loadImage(renderer, "resources/pointer.bmp");
 	int selection = 0;
 	SDL_Event e;
-	
+
 	int newpos = h->getRank();
 	if (newpos > 10)
 	{
 		newpos = 10;
 	}
-	
+
 	for (;;)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderClear(renderer);
-		
+
 		SDL_Rect eSpace = {0, newpos*40, 480, 40};
 		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 		SDL_RenderFillRect(renderer, &eSpace);
-		
+
 		SDL_RenderCopy(renderer, list, NULL, NULL);
 		applyTexture(renderer, pointer, selection==0?52:225, 447);
 		SDL_RenderPresent(renderer);
-		
+
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
