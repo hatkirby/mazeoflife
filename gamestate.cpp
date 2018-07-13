@@ -14,6 +14,9 @@
 #include <deque>
 #include <iostream>
 #include <sstream>
+#include <list>
+#include <unordered_map>
+#include <unordered_set>
 
 class GameBoard {
 	public:
@@ -23,13 +26,32 @@ class GameBoard {
 		bool isObstructed(int x, int y) const;
     bool operator<(const GameBoard& other) const;
 
+    using coord = std::tuple<int, int>;
+
 	private:
     void initialize(int level);
-    int solve(int playerx, int playery) const;
+    bool solve(int playerx, int playery) const;
     std::string dump() const;
 
-    std::bitset<WIDTH*HEIGHT> blocks;
-    std::bitset<WIDTH*HEIGHT> updateable;
+    using board_type = std::bitset<WIDTH*HEIGHT>;
+
+    void incrementIfNeighbor(
+      int x,
+      int y,
+      const board_type& temp,
+      int playerx,
+      int playery,
+      int& tick) const;
+
+    bool applyNeighbors(
+      int x,
+      int y,
+      const board_type& temp,
+      int playerx,
+      int playery) const;
+
+    board_type blocks;
+    board_type updateable;
     int oldx;
     int oldy;
 };
@@ -80,18 +102,24 @@ void setRendererDeadColor(SDL_Renderer* renderer, int level)
 	}
 }
 
-void incrementIfNeighbor(int x, int y, std::bitset<WIDTH*HEIGHT>& temp, int* tick, int playerx, int playery)
+void GameBoard::incrementIfNeighbor(
+  int x,
+  int y,
+  const board_type& temp,
+  int playerx,
+  int playery,
+  int& tick) const
 {
 	int nx = x;
 	int ny = y;
 
-	wrap(&x, &y);
+	wrap(x, y);
 
 	if (!((nx!=x)&&(ny!=y)))
 	{
 		if ((temp[x+y*WIDTH])||((playerx==x)&&(playery==y))||((x==15)&&(y==15)))
 		{
-			++*tick;
+			++tick;
 		}
 	}
 }
@@ -285,7 +313,7 @@ State* PlayGameState::operator() (SDL_Window* window, SDL_Renderer* renderer)
 
 bool PlayGameState::move(int x, int y)
 {
-	wrap(&x, &y);
+	wrap(x, y);
 
 	// Are we at the event?
 	if ((x==15)&&(y==15))
@@ -317,8 +345,7 @@ GameBoard::GameBoard(int level, int playerx, int playery)
       tick(playerx, playery);
     }
 
-    int states = solve(playerx, playery);
-    if (states != 0)
+    if (solve(playerx, playery))
     {
       break;
     } else {
@@ -329,8 +356,8 @@ GameBoard::GameBoard(int level, int playerx, int playery)
 
 void GameBoard::tick(int playerx, int playery)
 {
-  std::bitset<WIDTH*HEIGHT> temp {blocks};
-  std::bitset<WIDTH*HEIGHT> tempdateable {updateable};
+  board_type temp {blocks};
+  board_type tempdateable {updateable};
   if ((playerx != oldx) || (playery != oldy))
   {
     for (int dy = -1; dy <= 1; dy++)
@@ -339,12 +366,12 @@ void GameBoard::tick(int playerx, int playery)
       {
         int tdx = oldx+dx;
         int tdy = oldy+dy;
-        wrap(&tdx, &tdy);
+        wrap(tdx, tdy);
         tempdateable.set(tdx+tdy*WIDTH);
 
         tdx = playerx+dx;
         tdy = playery+dy;
-        wrap(&tdx, &tdy);
+        wrap(tdx, tdy);
         tempdateable.set(tdx+tdy*WIDTH);
       }
     }
@@ -364,23 +391,7 @@ void GameBoard::tick(int playerx, int playery)
 				continue;
 			}
 
-			int neighbors = 0;
-
-			incrementIfNeighbor(x-1, y-1, temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x-1, y  , temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x-1, y+1, temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x  , y-1, temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x  , y+1, temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x+1, y-1, temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x+1, y  , temp, &neighbors, playerx, playery);
-			incrementIfNeighbor(x+1, y+1, temp, &neighbors, playerx, playery);
-
-			if (temp[x+y*WIDTH])
-			{
-				blocks[x+y*WIDTH] = ((neighbors >= 1) && (neighbors <= 4));
-			} else {
-				blocks[x+y*WIDTH] = (neighbors == 3);
-			}
+      blocks[x+y*WIDTH] = applyNeighbors(x, y, temp, playerx, playery);
 
       if (temp[x+y*WIDTH] != blocks[x+y*WIDTH])
       {
@@ -390,12 +401,38 @@ void GameBoard::tick(int playerx, int playery)
           {
             int tdx = x+dx;
             int tdy = y+dy;
-            wrap(&tdx, &tdy);
+            wrap(tdx, tdy);
             updateable.set(tdx+tdy*WIDTH);
           }
         }
       }
 		}
+	}
+}
+
+bool GameBoard::applyNeighbors(
+  int x,
+  int y,
+  const board_type& temp,
+  int playerx,
+  int playery) const
+{
+	int neighbors = 0;
+
+	incrementIfNeighbor(x-1, y-1, temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x-1, y  , temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x-1, y+1, temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x  , y-1, temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x  , y+1, temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x+1, y-1, temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x+1, y  , temp, playerx, playery, neighbors);
+	incrementIfNeighbor(x+1, y+1, temp, playerx, playery, neighbors);
+
+	if (temp[x+y*WIDTH])
+	{
+		return ((neighbors >= 1) && (neighbors <= 4));
+	} else {
+		return (neighbors == 3);
 	}
 }
 
@@ -426,7 +463,7 @@ void GameBoard::render(SDL_Renderer* renderer, int level) const
 
 bool GameBoard::isObstructed(int x, int y) const
 {
-	return blocks[x+y*WIDTH];
+	return blocks[x+y*WIDTH] || (x == 15 && y == 15);
 }
 
 void GameBoard::initialize(int level)
@@ -481,82 +518,220 @@ bool GameBoard::operator<(const GameBoard& other) const
   return false;
 }
 
-int GameBoard::solve(int playerx, int playery) const
+bool GameBoard::solve(int playerx, int playery) const
 {
-  std::deque<std::tuple<int, int, GameBoard, int>> search;
-  std::set<std::tuple<int, int, GameBoard>> done;
-  search.push_front(std::make_tuple(playerx, playery, *this, 0));
+  std::deque<std::tuple<GameBoard, coord, int>> search;
+  std::unordered_map<board_type, board_type> done;
 
+  // Assume that the player will not move while the board is changing, so tick
+  // the board until it either stops changing, or it reaches a state that it has
+  // already been in (in the case of alternating systems).
+  {
+    GameBoard original = *this;
+
+    std::unordered_set<board_type> pastStates;
+    pastStates.insert(original.blocks);
+
+    while (original.updateable.any())
+    {
+      original.tick(playerx, playery);
+
+      if (pastStates.count(original.blocks))
+      {
+        break;
+      }
+
+      pastStates.insert(original.blocks);
+    }
+
+    search.emplace_front(std::move(original), coord{playerx, playery}, 0);
+  }
+
+  // Use breadth first search to find a solution.
   bool exists = false;
   while (!search.empty())
   {
-    auto cur = search.front();
+    auto cur = std::move(search.front());
     search.pop_front();
 
-    int cpx = std::get<0>(cur);
-    int cpy = std::get<1>(cur);
-    GameBoard& cbr = std::get<2>(cur);
-    int cns = std::get<3>(cur);
+    GameBoard& cbr = std::get<0>(cur);
+    coord& cpl = std::get<1>(cur);
+    int cns = std::get<2>(cur);
 
-    auto cdn = std::make_tuple(cpx, cpy, cbr);
-    done.insert(cdn);
-
-    if (((cpx == 15) && ((cpy == 14) || (cpy == 16))) || ((cpy == 15) && ((cpx == 14) || (cpx == 16))))
-    {
-      exists = true;
-      break;
-    }
-
-    if (cns >= 100)
+    // If it has been over 100 generations, give up.
+    if (cns > 100)
     {
       continue;
     }
 
-    GameBoard immnext {cbr};
-    immnext.tick(cpx, cpy);
-    if (immnext.blocks != cbr.blocks)
-    {
-      if (done.count(std::make_tuple(cpx, cpy, immnext)) == 0)
-      {
-        search.push_front(std::make_tuple(cpx, cpy, immnext, cns));
+    int cplx = std::get<0>(cpl);
+    int cply = std::get<1>(cpl);
 
-        continue;
-      }
+    // If this section of this board state has already been checked, skip it.
+    if (done.count(cbr.blocks) && done.at(cbr.blocks)[cplx+cply*WIDTH])
+    {
+      continue;
     }
 
-    std::vector<std::pair<int, int>> dirchanges {{cpx-1,cpy}, {cpx,cpy-1}, {cpx+1,cpy}, {cpx,cpy+1}};
-    std::sort(std::begin(dirchanges), std::end(dirchanges), [] (const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) {
-      int lhd = sqrt(pow(15 - lhs.first, 2.0) + pow(15 - lhs.second, 2.0));
-      int rhd = sqrt(pow(15 - rhs.first, 2.0) + pow(15 - rhs.second, 2.0));
+    // Use a flood fill to find a set of positions accessible to the player
+    // without modifying the board state, as well as a set of positions adjacent
+    // to the flood that /will/ modify the board state.
+    board_type flood;
+    std::deque<coord> front;
+    front.push_front(cpl);
+    flood[cplx+cply*WIDTH] = true;
 
-      return lhd > rhd;
-    });
+    std::set<coord> edges;
 
-    for (auto& dirchange : dirchanges)
+    while (!front.empty())
     {
-      GameBoard next {cbr};
-      int npx = cpx + dirchange.first;
-      int npy = cpy + dirchange.second;
-      wrap(&npx, &npy);
+      coord frontLoc = std::move(front.front());
+      front.pop_front();
 
-      if (!next.isObstructed(npx, npy))
+      // Iterate over the positions 4-adjacent to the current one.
+      for (coord& fc : std::list<coord>{
+        {std::get<0>(frontLoc) - 1, std::get<1>(frontLoc)    },
+        {std::get<0>(frontLoc) + 1, std::get<1>(frontLoc)    },
+        {std::get<0>(frontLoc)    , std::get<1>(frontLoc) - 1},
+        {std::get<0>(frontLoc)    , std::get<1>(frontLoc) + 1},
+      })
       {
-        next.tick(npx, npy);
+        wrap(std::get<0>(fc), std::get<1>(fc));
+        int fcx = std::get<0>(fc);
+        int fcy = std::get<1>(fc);
 
-        if (done.count(std::make_tuple(npx, npy, next)) == 0)
+        // If this position is already in the flood, skip it.
+        if (flood[fcx+fcy*WIDTH])
         {
-          search.push_front(std::make_tuple(npx, npy, next, cns+1));
+          continue;
+        }
+
+        // If the player could not move into this position, skip it.
+        if (cbr.isObstructed(fcx, fcy))
+        {
+          continue;
+        }
+
+        // If this position is adjacent to the event, then the board is
+        // solvable.
+        if (((fcx == 15) && ((fcy == 14) || (fcy == 16))) ||
+            ((fcy == 15) && ((fcx == 14) || (fcx == 16))))
+        {
+          exists = true;
+          break;
+        }
+
+        // Check if the player moving would cause any positions 8-adjacent to
+        // the start or end positions to change. This is more efficient than
+        // copying the board state and then running tick.
+        bool changed = false;
+        for (int dy = -1; dy <= 1; dy++)
+        {
+          for (int dx = -1; dx <=1; dx++)
+          {
+            if (dx == 0 && dy == 0)
+            {
+              continue;
+            }
+
+            int cpldx = cplx + dx;
+            int cpldy = cply + dy;
+            wrap(cpldx, cpldy);
+
+            if (cbr.isObstructed(cpldx, cpldy) !=
+              applyNeighbors(
+                cpldx,
+                cpldy,
+                cbr.blocks,
+                fcx,
+                fcy))
+            {
+              changed = true;
+              break;
+            }
+
+            int fcxdx = fcx + dx;
+            int fcydy = fcy + dy;
+            wrap(fcxdx, fcydy);
+
+            if (cbr.isObstructed(fcxdx, fcydy) !=
+              applyNeighbors(
+                fcxdx,
+                fcydy,
+                cbr.blocks,
+                fcx,
+                fcy))
+            {
+              changed = true;
+              break;
+            }
+          }
+
+          if (changed)
+          {
+            break;
+          }
+        }
+
+        // If moving to this position would change the board state, add it to
+        // the set of edges; otherwise, add it to the flood and the flood front.
+        if (changed)
+        {
+          edges.insert(fc);
+        } else {
+          flood[fcx+fcy*WIDTH] = true;
+          front.push_back(fc);
         }
       }
+
+      if (exists)
+      {
+        break;
+      }
+    }
+
+    if (exists)
+    {
+      break;
+    }
+
+    // Add the flood to the set of checked positions for this board state.
+    done[cbr.blocks] |= flood;
+
+    // Add the edges to the search queue.
+    for (const coord& newLoc : edges)
+    {
+      GameBoard nextState1 = cbr;
+      nextState1.tick(std::get<0>(newLoc), std::get<1>(newLoc));
+
+      // Assume that the player will not move while the board is changing, so
+      // tick the board until it either stops changing, or it reaches a state
+      // that it has already been in (in the case of alternating systems).
+      std::unordered_set<board_type> pastStates;
+      pastStates.insert(nextState1.blocks);
+
+      while (nextState1.updateable.any())
+      {
+        nextState1.tick(std::get<0>(newLoc), std::get<1>(newLoc));
+
+        if (pastStates.count(nextState1.blocks))
+        {
+          break;
+        }
+
+        pastStates.insert(nextState1.blocks);
+      }
+
+      if (!done.count(nextState1.blocks) ||
+          !done.at(nextState1.blocks)
+            [std::get<0>(newLoc) + std::get<1>(newLoc)*WIDTH])
+      {
+        search.emplace_back(std::move(nextState1), newLoc, cns+1);
+      }
     }
   }
 
-  if (exists)
-  {
-    return done.size();
-  } else {
-    return 0;
-  }
+  return exists;
 }
 
 std::string GameBoard::dump() const

@@ -2,22 +2,22 @@
 #include "mazeoflife.h"
 #include <iostream>
 
-void wrap(int* x, int* y)
+void wrap(int& x, int& y)
 {
-	if (*x < 0)
+	if (x < 0)
 	{
-		*x = WIDTH-(0-*x);
-	} else if (*x >= WIDTH)
+		x = WIDTH+x;
+	} else if (x >= WIDTH)
 	{
-		*x = *x-WIDTH;
+		x = x-WIDTH;
 	}
 
-  if (*y < 0)
+  if (y < 0)
 	{
-		*y = HEIGHT-(0-*y);
-	} else if (*y >= HEIGHT)
+		y = HEIGHT+y;
+	} else if (y >= HEIGHT)
 	{
-		*y = *y-HEIGHT;
+		y = y-HEIGHT;
 	}
 }
 

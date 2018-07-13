@@ -5,7 +5,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-void wrap(int* x, int* y);
+void wrap(int& x, int& y);
 TTF_Font* loadFont(int size);
 const char* getDataFile();
 SDL_Texture* loadImage(SDL_Renderer* renderer, std::string file);
